@@ -1,45 +1,48 @@
 import os,sys
 from importlib import import_module
 import json
-from datetime import datetime
 from pprint import pprint
 from descarteslabs.client.services.tasks import Tasks, as_completed
 import dl_jobs.config as c
+import dl_jobs.utils as utils
 sys.path.append(os.getcwd())
-
-
 #
 # DEFAULTS
 #
 DL_IMAGE=c.get('dl_image')
 IS_DEV=c.get('is_dev')
 MODULE_DIR=c.get('module_dir')
-TS_FMT="%b %d %Y %H:%M:%S"
+
+
+
+
+#
+# PUBLIC METHODS
+#
+def launch(module,method='task',dev=IS_DEV,args=[]):
+    timer=utils.Timer()
+    func=_setup(timer,module,method=method,dev=dev)
+    task=_run_task(timer,func,dev=dev,args=args)
+    print(task)
+
+
+def launch_tasks(module,method='task',dev=IS_DEV,args_list=[]):
+    timer=utils.Timer()
+    func=_setup(timer,module,method=method,dev=dev)
+    task=_run_tasks(timer,func,dev=dev,args=args_list)
+    print(task)
+
 
 
 
 #
-# HELPERS
+# INTERNAL METHODS
 #
-def _duration(end,start):
-    return str(end-start).split('.')[0]
-
-
-def _vspace(n=2):
-    print("\n"*n)
-
-
-def _line(char='-',length=100):
-    print(char*length)
-
-
-#
-# METHODS
-#
-def setup(module,method='task',dev=IS_DEV):
+def _setup(timer,module,method='task',dev=IS_DEV):
     full_method=f'{MODULE_DIR}.{module}.{method}'
-    _vspace()
+    utils.vspace()
     print(f"SETUP TASK: {full_method}")
+    print(f"- start: {timer.start()}")
     print(f"- dev mode: {dev}")
     print(f"- creating function: {full_method}")
     # create task group
@@ -62,10 +65,8 @@ def setup(module,method='task',dev=IS_DEV):
     return func
 
 
-def run_task(func,dev=IS_DEV,args=[]):
-    start=datetime.now()
+def _run_task(timer,func,dev=IS_DEV,args=[]):
     print(f"RUN TASK:")
-    print(f"- start: {start.strftime(TS_FMT)}")
     print(f"- args: {args}")
     if dev:
         print(f"- execute dev task: ")
@@ -78,45 +79,35 @@ def run_task(func,dev=IS_DEV,args=[]):
         print("- waiting for the task to complete...")
         result=task.result
         log=task.log.decode('unicode_escape')
-    end=datetime.now()
     # print the task result and logs
-    print(f"- end: {end.strftime(TS_FMT)}")
-    print(f"- duration: {_duration(end,start)}")
-    _vspace()
-    _line()
+    print(f"- end: {timer.stop()}")
+    print(f"- duration: {timer.duration()}")
+    utils.vspace()
+    utils.line()
     print("RESULT")
-    _line()
+    utils.line()
     pprint(json.loads(result))
     if log:
-        _vspace()
-        _line()
+        utils.vspace()
+        utils.line()
         print("LOG")
-        _line()
+        utils.line()
         print(log)
-    _vspace()
+    utils.vspace()
     return task
 
 
-
-def launch(module,method='task',dev=IS_DEV,args=[]):
-    func=setup(module,method=method,dev=dev)
-    task=run_task(func,dev=dev,args=args)
-    print(task)
-
-
-def launch_tasks(module,method='task',dev=IS_DEV,args_list=[]):
-    print(f"RUN TASKS:")
-    func=setup(module,method=method,dev=dev)
-    start=datetime.now()
-    print(f"- start: {start.strftime(TS_FMT)}")
-    print("- submitting tasks")
+def _run_tasks(timer,func,dev=IS_DEV,args_list=[]):
     if isinstance(args_list,int):
         args_list=range(args_list)
+    print(f"RUN TASKS:")
+    print("- submitting tasks")
+    print(f"- args_list: {args_list}")        
     tasks = func.map(args_list)
     # print the shape of the image array returned by each task
     print("- starting to wait for task completions")
     if dev:
-        print("done")
+        print("- dev-mode complete")
         print(tasks)
     else:
         for task in as_completed(tasks):
@@ -125,9 +116,8 @@ def launch_tasks(module,method='task',dev=IS_DEV,args_list=[]):
             else:
                 print(task.exception)
                 print(task.log)
-    end=datetime.now()
     # print the task result and logs
-    print(f"- end: {end.strftime(TS_FMT)}")
-    print(f"- duration: {_duration(end,start)}")
+    print(f"- end: {timer.end()}")
+    print(f"- duration: {timer.duration()}")
 
 
