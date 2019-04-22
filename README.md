@@ -1,6 +1,6 @@
 ##### DL JOBS (WIP):
 
-_CLI and Helper modules for managing [https://docs.descarteslabs.com/guides/tasks.html](DLTasks)_
+_CLI and Helper modules for managing [DLTasks](https://docs.descarteslabs.com/guides/tasks.html)_
 
 ---
 
