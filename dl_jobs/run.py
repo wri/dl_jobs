@@ -13,6 +13,7 @@ sys.path.append(os.getcwd())
 #
 DL_IMAGE=c.get('dl_image')
 IS_DEV=c.get('is_dev')
+MODULE_DIR=c.get('module_dir')
 TS_FMT="%b %d %Y %H:%M:%S"
 
 
@@ -36,14 +37,15 @@ def _line(char='-',length=100):
 # METHODS
 #
 def setup(module,method='task',dev=IS_DEV):
-    full_method=f'run.{module}.{method}'
+    full_method=f'{MODULE_DIR}.{module}.{method}'
     _vspace()
     print(f"SETUP TASK: {full_method}")
     print(f"- dev mode: {dev}")
     print(f"- creating function: {full_method}")
     # create task group
     # task_module=getattr(run,module)
-    task_module=import_module(f'run.{module}')
+    print(f'{MODULE_DIR}.{module}')
+    task_module=import_module(f'{MODULE_DIR}.{module}')
     if dev:
         func=getattr(task_module,method)
     else:

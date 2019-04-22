@@ -7,7 +7,7 @@ DL_IMAGE='us.gcr.io/dl-ci-cd/images/tasks/public/py3.7/default:v2019.02.12'
 DLS_ROOT='dl_jobs'
 IS_DEV=True
 NOISY=True
-
+MODULE_DIR='run'
 #
 # DL_JOBS CONFIG:
 #

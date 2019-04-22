@@ -9,6 +9,7 @@ _DEFAULTS={
     'dl_image': c.DL_IMAGE,
     'dls_root': c.DLS_ROOT,
     'is_dev': c.IS_DEV,
+    'module_dir': c.MODULE_DIR,
     'noisy': c.NOISY
 }
 
@@ -32,6 +33,7 @@ def generate(
         dl_image=c.DL_IMAGE,
         dls_root=c.DLS_ROOT,
         is_dev=c.IS_DEV,
+        module_dir=c.MODULE_DIR,
         noisy=c.NOISY,
         force=False):
     """ generate config file
@@ -40,6 +42,7 @@ def generate(
         'dl_image': dl_image,
         'dls_root': dls_root,
         'is_dev': is_dev,
+        'module_dir': module_dir,
         'noisy': noisy }
     if not force and os.path.exists(c.DL_JOBS_CONFIG_PATH):
         utils.log(c.DL_JOBS_CONFIG_EXISTS,True,level="ERROR")

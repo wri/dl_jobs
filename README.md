@@ -1,14 +1,24 @@
-##### DL JOBS (WIP):
+#### DL JOBS (WIP)
 
 _CLI and Helper modules for managing [DLTasks](https://docs.descarteslabs.com/guides/tasks.html)_
 
 ---
 
-#### MODULE ( `dl_jobs.run` )
+##### MODULE
+
+- `dl_jobs.run`
+
+```python
+run.launch('np_tests')
+```
 
 ---
 
-#### CLI
+##### CLI
+
+```bash
+dl_jobs task np_tests
+```
 
 ```bash
 $ dl_jobs --help
@@ -25,7 +35,9 @@ Commands:
 
 ---
 
-#### HELPERS 
+##### HELPERS
 
 - `dl_jobs.catalog`
 - `dl_jobs.storage` 
+- `dl_jobs.image_io`
+- `dl_jobs.utils`  
