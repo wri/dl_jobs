@@ -15,57 +15,62 @@ MODULE_DIR=c.get('module_dir')
 
 
 
-
 #
 # PUBLIC METHODS
 #
 def launch(module,method='task',dev=IS_DEV,args=[]):
-    timer=utils.Timer()
-    func=_setup(timer,module,method=method,dev=dev)
+    timer, module, method_name, dev=_setup(module,method,dev)
+    func=_create_func(timer,module,method_name,dev,method=method)
     task=_run_task(timer,func,dev=dev,args=args)
-    print(task)
+    return task
 
 
 def launch_tasks(module,method='task',dev=IS_DEV,args_list=[]):
-    timer=utils.Timer()
-    func=_setup(timer,module,method=method,dev=dev)
-    task=_run_tasks(timer,func,dev=dev,args=args_list)
-    print(task)
-
-
+    timer, module, method_name, dev=_setup(module,method,dev)
+    func=_create_func(timer,module,method_name,dev,method=method)
+    tasks=_run_tasks(timer,func,dev=dev,args=args_list)
+    return tasks
 
 
 #
 # INTERNAL METHODS
 #
-def _setup(timer,module,method='task',dev=IS_DEV):
-    full_method=f'{MODULE_DIR}.{module}.{method}'
+def _setup(module,method,dev):
+    timer=utils.Timer()
+    module_name=f'{MODULE_DIR}.{module}'
+    module=import_module(module_name)
+    method_name=f'{module_name}.{method}'
+    dev=_is_dev(dev,module)
     utils.vspace()
-    print(f"SETUP TASK: {full_method}")
+    print(f"SETUP TASK: {method_name}")
     print(f"- start: {timer.start()}")
     print(f"- dev mode: {dev}")
-    print(f"- creating function: {full_method}")
+    return timer, module, method_name, dev
+
+
+def _create_func(timer,module,method_name,dev,method='task'):
+    print("CREATE FUNCTION:")
+    print(f"- name: {method_name}")
     # create task group
-    # task_module=getattr(run,module)
-    print(f'{MODULE_DIR}.{module}')
-    task_module=import_module(f'{MODULE_DIR}.{module}')
     if dev:
-        func=getattr(task_module,method)
+        func=getattr(module,method)
+        print("- dev created")
     else:
         client = Tasks()
         func = client.create_function(
-            full_method,
-            name=full_method,
+            method_name,
+            name=method_name,
             image=DL_IMAGE,
-            include_data=task_module.DATA,
-            include_modules=task_module.MODULES,
-            requirements=task_module.REQUIREMENTS,
-            gpus=task_module.GPUS
+            include_data=module.DATA,
+            include_modules=module.MODULES,
+            requirements=module.REQUIREMENTS,
+            gpus=module.GPUS
         )
+        print("- async func created")
     return func
 
 
-def _run_task(timer,func,dev=IS_DEV,args=[]):
+def _run_task(timer,func,dev,args=[]):
     print(f"RUN TASK:")
     print(f"- args: {args}")
     if dev:
@@ -108,7 +113,6 @@ def _run_tasks(timer,func,dev=IS_DEV,args_list=[]):
     print("- starting to wait for task completions")
     if dev:
         print("- dev-mode complete")
-        print(tasks)
     else:
         for task in as_completed(tasks):
             if task.is_success:
@@ -119,5 +123,20 @@ def _run_tasks(timer,func,dev=IS_DEV,args_list=[]):
     # print the task result and logs
     print(f"- end: {timer.end()}")
     print(f"- duration: {timer.duration()}")
+    return tasks
 
+
+def _is_dev(dev,module):
+    print('idev',dev)
+    if dev is None:
+        try:
+            print(module)
+            print(dir(module))
+            dev=getattr(module,'IS_DEV')
+            print('boom')
+        except:
+            print('bop')
+            1/0
+            dev=IS_DEV
+    return dev
 

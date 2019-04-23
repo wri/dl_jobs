@@ -17,7 +17,7 @@ run.launch('np_tests')
 ##### CLI
 
 ```bash
-dl_jobs task np_tests
+$ dl_jobs task np_tests
 ```
 
 ```bash

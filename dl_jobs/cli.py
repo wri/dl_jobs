@@ -7,7 +7,7 @@ import dl_jobs.config as c
 # DEFAULTS
 #
 IS_DEV=c.get('is_dev')
-
+DEV_HELP=f'<bool> run method outside of DL TASK. default: module-default or {IS_DEV}'
 
 
 #
@@ -27,11 +27,12 @@ def cli():
     type=str)
 @click.option(
     '--dev',
-    help=f'<bool> run method outside of DL TASK',
-    default=IS_DEV,
+    help=DEV_HELP,
+    default=None,
     type=bool)
-@click.argument('args',type=int,nargs=-1)
+@click.argument('args',type=str,nargs=-1)
 def task(module,method,dev,args):
+    print(args,type(args))
     run.launch(
         module=module,
         method=method,
@@ -48,8 +49,8 @@ def task(module,method,dev,args):
     type=str)
 @click.option(
     '--dev',
-    help=f'<bool> run method outside of DL TASK',
-    default=IS_DEV,
+    help=DEV_HELP,
+    default=None,
     type=bool)
 @click.argument('args',type=int,nargs=-1)
 def tasks(module,method,dev,args_list):
