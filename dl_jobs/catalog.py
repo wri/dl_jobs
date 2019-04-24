@@ -1,3 +1,4 @@
+from __future__ import print_function
 import descarteslabs as dl
 
 OUTPUT_BANDS=[

@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os,sys
 sys.path.append(os.environ.get('PROJECT_DIR','..'))
 import click

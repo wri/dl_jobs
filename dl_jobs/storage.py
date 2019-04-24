@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os
 from descarteslabs.client.services.storage import Storage
 import dl_jobs.image_io as io
