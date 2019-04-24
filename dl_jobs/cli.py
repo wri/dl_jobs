@@ -8,7 +8,7 @@ import dl_jobs.config as c
 # DEFAULTS
 #
 IS_DEV=c.get('is_dev')
-DEV_HELP=f'<bool> run method outside of DL TASK. default: module-default or {IS_DEV}'
+DEV_HELP='<bool> Execute without DLTasks. < module-default or {} >'.format(IS_DEV)
 
 
 #
@@ -23,7 +23,7 @@ def cli():
 @click.argument('module',type=str)
 @click.option(
     '--method',
-    help=f'method name',
+    help='method name',
     default='task',
     type=str)
 @click.option(
@@ -45,7 +45,7 @@ def task(module,method,dev,args):
 @click.argument('module',type=str)
 @click.option(
     '--method',
-    help=f'method name',
+    help='method name',
     default='task',
     type=str)
 @click.option(

@@ -38,20 +38,20 @@ def launch_tasks(module,method='task',dev=IS_DEV,args_list=[]):
 #
 def _setup(module,method,dev):
     timer=utils.Timer()
-    module_name=f'{MODULE_DIR}.{module}'
+    module_name='{}.{}'.format(MODULE_DIR,module)
     module=import_module(module_name)
-    method_name=f'{module_name}.{method}'
+    method_name='{}.{}'.format(module_name,method)
     dev=_is_dev(dev,module)
     utils.vspace()
-    print(f"SETUP TASK: {method_name}")
-    print(f"- start: {timer.start()}")
-    print(f"- dev mode: {dev}")
+    print('SETUP TASK: {}'.format(method_name))
+    print('- start: {}'.format(timer.start()))
+    print('- dev mode: {}'.format(dev))
     return timer, module, method_name, dev
 
 
 def _create_func(timer,module,method_name,dev,method='task'):
     print("CREATE FUNCTION:")
-    print(f"- name: {method_name}")
+    print('- name: {}'.format(method_name))
     # create task group
     if dev:
         func=getattr(module,method)
@@ -72,10 +72,10 @@ def _create_func(timer,module,method_name,dev,method='task'):
 
 
 def _run_task(timer,func,dev,args=[]):
-    print(f"RUN TASK:")
-    print(f"- args: {args}")
+    print('RUN TASK:')
+    print('- args: {}'.format(args))
     if dev:
-        print(f"- execute dev task: ")
+        print('- execute dev task:')
         result=func(*args)
         log=False
         task={'DEV':True}
@@ -86,8 +86,8 @@ def _run_task(timer,func,dev,args=[]):
         result=task.result
         log=task.log.decode('unicode_escape')
     # print the task result and logs
-    print(f"- end: {timer.stop()}")
-    print(f"- duration: {timer.duration()}")
+    print('- end: {}'.format(timer.stop()))
+    print('- duration: {}'.format(timer.duration()))
     utils.vspace()
     utils.line()
     print("RESULT")
@@ -106,9 +106,9 @@ def _run_task(timer,func,dev,args=[]):
 def _run_tasks(timer,func,dev=IS_DEV,args_list=[]):
     if isinstance(args_list,int):
         args_list=range(args_list)
-    print(f"RUN TASKS:")
+    print('RUN TASKS:')
     print("- submitting tasks")
-    print(f"- args_list: {args_list}")        
+    print('- args_list: {}'.format(args_list))        
     tasks = func.map(args_list)
     # print the shape of the image array returned by each task
     print("- starting to wait for task completions")
@@ -122,13 +122,12 @@ def _run_tasks(timer,func,dev=IS_DEV,args_list=[]):
                 print(task.exception)
                 print(task.log)
     # print the task result and logs
-    print(f"- end: {timer.end()}")
-    print(f"- duration: {timer.duration()}")
+    print('- end: {}'.format(timer.end()))
+    print('- duration: {}'.format(timer.duration()))
     return tasks
 
 
 def _is_dev(dev,module):
-    print('idev',dev)
     if dev is None:
         try:
             print(module)

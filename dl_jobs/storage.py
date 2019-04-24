@@ -18,7 +18,7 @@ def file_upload(path,folder=DLS_ROOT,client=None):
         client=Storage()
     with open(path, "rb") as file:
         fname=path.split('/')[-1]
-        storage_path=f'{folder}/{fname}'
+        storage_path='{}/{}'.format(folder,fname)
         client.set_file(storage_path, file)
     return storage_path
 
@@ -26,7 +26,7 @@ def file_upload(path,folder=DLS_ROOT,client=None):
 def files_upload(paths,folder=DLS_ROOT,client=None):
     if client is None:
         client=Storage()
-    print(f'DLS: uploading {len(paths)} files')
+    print('DLS: uploading {} files'.format(len(paths)))
     KEYS=[file_upload(p,folder=folder,client=client) for p in paths]
     return KEYS
 
@@ -43,7 +43,7 @@ def image_read(*key_parts,key=None,root=DLS_ROOT,client=None):
         client=Storage()
     key=file_key(*key_parts,key=key,root=root)
     name=key.split('/')[-1]
-    path=f'/cache/{name}'
+    path='/cache/{}'.format(name)
     print('DLS: image_read',name)
     client.get_file(key,path)
     return io.read(path)

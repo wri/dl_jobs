@@ -57,7 +57,7 @@ def add_band(prod_id,name,srcband,catalog=None):
         nbits=NBITS,
         type='spectral',
         color=color,
-        description=f'{name}: {color}'
+        description='{}: {}'.format(name,color)
     )
     
 
