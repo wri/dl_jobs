@@ -1,6 +1,8 @@
 from __future__ import print_function
 import os.path
+import warnings
 import yaml
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 import dl_jobs.utils as utils
 import dl_jobs.constants as c
 #

@@ -33,7 +33,6 @@ def cli():
     type=bool)
 @click.argument('args',type=str,nargs=-1)
 def task(module,method,dev,args):
-    print(args,type(args))
     run.launch(
         module=module,
         method=method,

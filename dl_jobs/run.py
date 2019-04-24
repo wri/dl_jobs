@@ -130,13 +130,8 @@ def _run_tasks(timer,func,dev=IS_DEV,args_list=[]):
 def _is_dev(dev,module):
     if dev is None:
         try:
-            print(module)
-            print(dir(module))
             dev=getattr(module,'IS_DEV')
-            print('boom')
         except:
-            print('bop')
-            1/0
             dev=IS_DEV
     return dev
 
