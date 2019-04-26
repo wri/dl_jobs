@@ -13,6 +13,8 @@ _DEFAULTS={
     'dls_root': c.DLS_ROOT,
     'is_dev': c.IS_DEV,
     'module_dir': c.MODULE_DIR,
+    'print_log': c.PRINT_LOG,
+    'default_method': c.DEFAULT_METHOD,
     'noisy': c.NOISY
 }
 
@@ -38,6 +40,8 @@ def generate(
         is_dev=c.IS_DEV,
         module_dir=c.MODULE_DIR,
         noisy=c.NOISY,
+        print_log=c.PRINT_LOG,
+        default_method=c.DEFAULT_METHOD,
         force=False):
     """ generate config file
     """
@@ -46,6 +50,8 @@ def generate(
         'dls_root': dls_root,
         'is_dev': is_dev,
         'module_dir': module_dir,
+        'print_log': print_log,
+        'default_method': default_method,
         'noisy': noisy }
     if not force and os.path.exists(c.DL_JOBS_CONFIG_PATH):
         utils.log(c.DL_JOBS_CONFIG_EXISTS,True,level="ERROR")
