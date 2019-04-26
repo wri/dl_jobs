@@ -1,4 +1,5 @@
 import os.path
+from importlib import import_module
 from descarteslabs.client.services.tasks import Tasks, as_completed
 import dl_jobs.utils as utils
 
@@ -8,11 +9,25 @@ NAME_TMPL='dljob_{}-{}'
 HEADER_TMPL='DLJob.{}:'
 TRACE_TMPL='- {}'
 
+
 class DLJob(object):
     
 
+
+    @staticmethod
+    def get_method(module_name,method_name):
+        module=import_module(module_name)
+        return getattr(module,method_name)
+
+
+    @staticmethod
+    def full_method_name(module_name,method_name):
+        return '.'.join([module_name,method_name])
+
+
     def __init__(self,
-            func,
+            module_name,
+            method_name,
             dl_image,
             args_list=None,
             modules=None,
@@ -26,7 +41,11 @@ class DLJob(object):
             *args,
             **kwargs):
         self.timer=utils.Timer()
-        self.func=func
+        self.module_name=module_name
+        self.method_name=method_name
+        self.method=DLJob.full_method_name(
+            self.module_name,
+            self.method_name)
         self.dl_image=dl_image
         self.args, self.kwargs=self._args(args,kwargs)
         self.args_list=self._args_list(args_list)
@@ -39,7 +58,6 @@ class DLJob(object):
         self.noisy=noisy
         self.logger=self._logger(log)
         self.tasks=[]
-        self.async_func=None
 
 
     def run(self):
@@ -84,12 +102,12 @@ class DLJob(object):
         self._print(self.name,True)
         self._print("start: {}".format(self.timer.start()))
         self._print("local_run",True)
-        self._print("timestamp: {}".format(self.timer.now()))
+        func=DLJob.get_method(self.module_name,self.method_name)
         if self.args_list:
-            out=map(self.func,self.args_list)
+            out=map(func,self.args_list)
             self._print("response: {}".format(list(out)))
         else:
-            out=self.func(*self.args,**self.kwargs)
+            out=func(*self.args,**self.kwargs)
             self._print("response: {}".format(out))
         self._print("end: {}".format(self.timer.stop()))
         self._print("duration: {}".format(self.timer.duration()))
@@ -98,13 +116,13 @@ class DLJob(object):
 
     def platform_run(self):
         self._print(self.name,True)
+        self._print("start: {}".format(self.timer.start()))
         self._print("platform_run",True)
-        self._print("timestamp: {}".format(self.timer.now()))
-        self.async_func=self._create_async_func()
+        async_func=self._create_async_func()
         if self.args_list:
-            out=self._run_platform_tasks()
+            out=self._run_platform_tasks(async_func)
         else:
-            out=self._run_platform_task()
+            out=self._run_platform_task(async_func)
         if self.noisy: utils.vspace(1)
         if self.noisy: utils.line()
         self._print("complete: {}".format(self.timer.stop()))
@@ -140,7 +158,7 @@ class DLJob(object):
                 typ='platform'
             else:
                 typ='local'
-            name=NAME_TMPL.format(self.func.__name__,typ)
+            name=NAME_TMPL.format(self.method,typ)
         return name
 
 
@@ -153,7 +171,7 @@ class DLJob(object):
 
     def _create_async_func(self):
         return Tasks().create_function(
-            self.func,
+            self.method,
             name=self.name,
             image=self.dl_image,
             include_data=self.data,
@@ -162,9 +180,9 @@ class DLJob(object):
             gpus=self.gpus )
 
 
-    def _run_platform_task(self):
+    def _run_platform_task(self,async_func):
         self._print("submit_task",True)
-        task=self.async_func(*self.args,**self.kwargs)
+        task=async_func(*self.args,**self.kwargs)
         self.tasks=[task]
         self._print("running...")
         if self.noisy: utils.line()
@@ -172,10 +190,10 @@ class DLJob(object):
         self._print(task.result,plain_text=True)
 
 
-    def _run_platform_tasks(self):
+    def _run_platform_tasks(self,async_func):
         if self.noisy: utils.vspace()
         self._print("submit_task",True)
-        self.tasks=self.async_func.map(self.args_list)
+        self.tasks=async_func.map(self.args_list)
         self._print("running...")
         if self.noisy: utils.line()
         for task in as_completed(tasks):
