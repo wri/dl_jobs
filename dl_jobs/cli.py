@@ -1,64 +1,109 @@
 from __future__ import print_function
 import os,sys
 sys.path.append(os.environ.get('PROJECT_DIR','..'))
+import re
 import click
-import dl_jobs.run as run
+import dl_jobs.run
 import dl_jobs.config as c
 #
 # DEFAULTS
 #
 IS_DEV=c.get('is_dev')
-DEV_HELP='<bool> Execute without DLTasks. < module-default or {} >'.format(IS_DEV)
+NOISY=c.get('noisy')
+PRINT_LOG=c.get('print_log')
+DL_IMAGE=c.get('dl_image')
+DEFAULT_METHOD=c.get('default_method')
+DEV_HELP='<bool> Execute without DLPlatform'
+NOISE_HELP='<bool> be noisy'
+PRINT_LOG_HELP='<bool> print log after execution'
+DL_IMAGE_HELP='<str> dl image'
+ARGS_LIST_HELP='<bool> True if multi-task job. Can also set via kwarg' 
+ARG_KWARGS_SETTINGS={
+    'ignore_unknown_options': True,
+    'allow_extra_args': True
+}
+
+
+
+#
+# HELPERS
+#
+def args_kwargs(ctx_args):
+    args=[]
+    kwargs={}
+    for a in ctx_args:
+        if re.search('=',a):
+            k,v=a.split('=')
+            kwargs[k]=v
+        else:
+            args.append(a)
+    return args,kwargs
 
 
 #
 # CLI INTERFACE
 #
 @click.group()
-def cli():
-    pass
+@click.pass_context
+def cli(ctx):
+    ctx.obj={}
 
 
-@click.command(help='args: see module')
-@click.argument('module',type=str)
-@click.option(
-    '--method',
-    help='method name',
-    default='task',
-    type=str)
-@click.option(
-    '--dev',
-    help=DEV_HELP,
-    default=None,
-    type=bool)
-@click.argument('args',type=str,nargs=-1)
-def task(module,method,dev,args):
-    run.launch(
-        module=module,
-        method=method,
-        dev=dev,
-        args=args)
-
-
-@click.command(help='args: see module')
-@click.argument('module',type=str)
-@click.option(
-    '--method',
-    help='method name',
-    default='task',
-    type=str)
+@click.command(
+    help='method: module_name or full method <module_name.method_name>'
+    context_settings=ARG_KWARGS_SETTINGS ) 
+@click.argument('method',type=str)
+# kwargs
 @click.option(
     '--dev',
     help=DEV_HELP,
-    default=None,
+    default=IS_DEV,
     type=bool)
-@click.argument('args',type=int,nargs=-1)
-def tasks(module,method,dev,args_list):
-    run.launch_tasks(
-        module=module,
-        method=method,
+@click.option(
+    '--noisy',
+    help=NOISE_HELP,
+    default=NOISY,
+    type=bool)
+@click.option(
+    '--print_log',
+    help=PRINT_LOG_HELP,
+    default=PRINT_LOG,
+    type=bool)
+@click.option(
+    '--image',
+    help=DL_IMAGE_HELP,
+    default=DL_IMAGE,
+    type=str)
+@click.option(
+    '--args_list',
+    help=ARGS_LIST_HELP,
+    default=False,
+    type=bool)
+@click.pass_context
+def run(ctx,method,dev,noisy,print_log,image,arg_list):
+    if re.search('.',method):
+        parts=method.split('.')
+        method=parts[-1]
+        module='.'.join(parts[:-1])
+    else:
+        module=method
+        method=DEFAULT_METHOD
+    args,kwargs=args_kwargs(ctx.args)
+    if arg_list or kwargs.pop('arg_list',False):
+        args_list=args
+        args=[]
+    dl_jobs.run.launch(
+        module_name=module,
+        method_name=method,
+        dl_image=image,
+        args=args,
+        kwargs=kwargs,
+        arg_list=arg_list,
         dev=dev,
-        args_list=args_list)
+        noisy,
+        print_log )
+
+
 
 
 @click.command(name='config',help='generate config file')
@@ -71,7 +116,8 @@ def tasks(module,method,dev,args_list):
     default=False,
     help='if true overwrite existing config',
     type=bool)
-def generate_config(dl_image,dls_root,is_dev,noisy,force):
+@click.pass_context
+def generate_config(ctx,dl_image,dls_root,is_dev,noisy,force):
     c.generate(
         dl_image=dl_image,
         dls_root=dls_root,
@@ -83,8 +129,7 @@ def generate_config(dl_image,dls_root,is_dev,noisy,force):
 #
 # MAIN
 #
-cli.add_command(task)
-cli.add_command(tasks)
+cli.add_command(run)
 cli.add_command(generate_config)
 if __name__ == "__main__":
     cli()
