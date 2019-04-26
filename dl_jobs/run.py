@@ -15,8 +15,9 @@ sys.path.append(os.getcwd())
 #
 DL_IMAGE=c.get('dl_image')
 IS_DEV=c.get('is_dev')
+NOISY=c.get('noisy')
 MODULE_DIR=c.get('module_dir')
-PRINT_LOG=c.get('print_log')
+PRINT_LOGS=c.get('print_logs')
 
 #
 # PUBLIC METHODS
@@ -27,10 +28,17 @@ def launch(
         dl_image=DL_IMAGE,
         args=[],
         kwargs={},
+        args_list=[],
         dev=IS_DEV,
-        print_log=PRINT_LOG):
+        print_logs=PRINT_LOGS,
+        noisy=NOISY):
     job_method=_get_job_method(module_name,method_name)
-    job=job_method(dl_image=dl_image,*args,**kwargs)
+    if not kwargs:
+        kwargs={}
+    kwargs['dl_image']=dl_image
+    kwargs['args_list']=args_list
+    kwargs['noisy']=noisy
+    job=job_method(*args,**kwargs)
     if dev is not None:
         job.platform_job=dev
     job.run()

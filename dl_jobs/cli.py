@@ -10,18 +10,19 @@ import dl_jobs.config as c
 #
 IS_DEV=c.get('is_dev')
 NOISY=c.get('noisy')
-PRINT_LOG=c.get('print_log')
+PRINT_LOG=c.get('print_logs')
 DL_IMAGE=c.get('dl_image')
 DEFAULT_METHOD=c.get('default_method')
 DEV_HELP='<bool> Execute without DLPlatform'
 NOISE_HELP='<bool> be noisy'
-PRINT_LOG_HELP='<bool> print log after execution'
+PRINT_LOGS_HELP='<bool> print log after execution'
 DL_IMAGE_HELP='<str> dl image'
 ARGS_LIST_HELP='<bool> True if multi-task job. Can also set via kwarg' 
 ARG_KWARGS_SETTINGS={
     'ignore_unknown_options': True,
     'allow_extra_args': True
 }
+FALSEY=['false','none','no','null','f','n','0']
 
 
 
@@ -40,6 +41,16 @@ def args_kwargs(ctx_args):
     return args,kwargs
 
 
+def truthy(value):
+    if isinstance(value,bool) or isinstance(value,int):
+        return value
+    elif isinstance(value,str):
+        value=value.lower()
+        return value not in FALSEY
+    else:
+        raise ValueError('truthy: value must be str,int,bool')
+
+
 #
 # CLI INTERFACE
 #
@@ -50,7 +61,7 @@ def cli(ctx):
 
 
 @click.command(
-    help='method: module_name or full method <module_name.method_name>'
+    help='method: module_name or full method <module_name.method_name>',
     context_settings=ARG_KWARGS_SETTINGS ) 
 @click.argument('method',type=str)
 # kwargs
@@ -65,8 +76,8 @@ def cli(ctx):
     default=NOISY,
     type=bool)
 @click.option(
-    '--print_log',
-    help=PRINT_LOG_HELP,
+    '--print_logs',
+    help=PRINT_LOGS_HELP,
     default=PRINT_LOG,
     type=bool)
 @click.option(
@@ -80,7 +91,7 @@ def cli(ctx):
     default=False,
     type=bool)
 @click.pass_context
-def run(ctx,method,dev,noisy,print_log,image,arg_list):
+def run(ctx,method,dev,noisy,print_logs,image,args_list):
     if re.search('.',method):
         parts=method.split('.')
         method=parts[-1]
@@ -89,7 +100,8 @@ def run(ctx,method,dev,noisy,print_log,image,arg_list):
         module=method
         method=DEFAULT_METHOD
     args,kwargs=args_kwargs(ctx.args)
-    if arg_list or kwargs.pop('arg_list',False):
+    args_list=args_list or kwargs.pop('args_list',False)
+    if truthy(args_list):
         args_list=args
         args=[]
     dl_jobs.run.launch(
@@ -98,10 +110,10 @@ def run(ctx,method,dev,noisy,print_log,image,arg_list):
         dl_image=image,
         args=args,
         kwargs=kwargs,
-        arg_list=arg_list,
+        args_list=args_list,
         dev=dev,
-        noisy,
-        print_log )
+        noisy=noisy,
+        print_logs=print_logs )
 
 
 

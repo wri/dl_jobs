@@ -1,6 +1,6 @@
 import os.path
 from descarteslabs.client.services.tasks import Tasks, as_completed
-from utils.timer import Timer
+import dl_jobs.utils as utils
 
 
 PLATFORM_JOB=False
@@ -14,22 +14,22 @@ class DLJob(object):
     def __init__(self,
             func,
             dl_image,
-            args=[],
-            kwargs={},
-            args_list=[],
-            modules=None
+            args_list=None,
+            modules=None,
             requirements=None,
             data=None,
-            gpus=None
+            gpus=None,
             platform_job=PLATFORM_JOB,
             name=None,
             noisy=True,
-            log=None ):
-        self.timer=Timer()
+            log=None,
+            *args,
+            **kwargs):
+        self.timer=utils.Timer()
         self.func=func
         self.dl_image=dl_image
         self.args, self.kwargs=self._args(args,kwargs)
-        self.args_list=self._args_list(args_list):
+        self.args_list=self._args_list(args_list)
         self.modules=modules
         self.requirements=self._requirements(requirements)
         self.data=data
@@ -39,8 +39,7 @@ class DLJob(object):
         self.noisy=noisy
         self.logger=self._logger(log)
         self.tasks=[]
-        self._print(self.name,True)
-        self._print("start: {}".format(self.timer.start()))
+        self.async_func=None
 
 
     def run(self):
@@ -64,6 +63,12 @@ class DLJob(object):
                     plain_text=True,
                     force=True)                
                 utils.vspace(1)
+        elif self.platform_job:
+            self._print(
+                'INFO: no logs (job run locally)',
+                plain_text=True,
+                force=True)
+            utils.vspace(1)
         else:
             self._print(
                 'WARNING: no tasks found',
@@ -76,18 +81,23 @@ class DLJob(object):
 
 
     def local_run(self):
+        self._print(self.name,True)
+        self._print("start: {}".format(self.timer.start()))
         self._print("local_run",True)
         self._print("timestamp: {}".format(self.timer.now()))
         if self.args_list:
             out=map(self.func,self.args_list)
+            self._print("response: {}".format(list(out)))
         else:
             out=self.func(*self.args,**self.kwargs)
+            self._print("response: {}".format(out))
         self._print("end: {}".format(self.timer.stop()))
         self._print("duration: {}".format(self.timer.duration()))
         return out
 
 
     def platform_run(self):
+        self._print(self.name,True)
         self._print("platform_run",True)
         self._print("timestamp: {}".format(self.timer.now()))
         self.async_func=self._create_async_func()
@@ -141,7 +151,7 @@ class DLJob(object):
         return log
 
 
-    def _create_async_func(timer,func):
+    def _create_async_func(self):
         return Tasks().create_function(
             self.func,
             name=self.name,
@@ -154,7 +164,7 @@ class DLJob(object):
 
     def _run_platform_task(self):
         self._print("submit_task",True)
-        task=self.func(*args,**kwargs)
+        task=self.async_func(*self.args,**self.kwargs)
         self.tasks=[task]
         self._print("running...")
         if self.noisy: utils.line()
@@ -165,7 +175,7 @@ class DLJob(object):
     def _run_platform_tasks(self):
         if self.noisy: utils.vspace()
         self._print("submit_task",True)
-        self.tasks=func.map(self.args_list)
+        self.tasks=self.async_func.map(self.args_list)
         self._print("running...")
         if self.noisy: utils.line()
         for task in as_completed(tasks):

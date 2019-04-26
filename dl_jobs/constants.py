@@ -9,7 +9,7 @@ DLS_ROOT='dl_jobs'
 IS_DEV=True
 NOISY=True
 MODULE_DIR='run'
-PRINT_LOG=True
+PRINT_LOGS=True
 DEFAULT_METHOD='task'
 
 
