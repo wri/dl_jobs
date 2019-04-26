@@ -7,5 +7,6 @@ def as_json(func):
         if isinstance(out,str):
             return out
         else:
+            if out is None: out={}
             return json.dumps(out)
     return decorator

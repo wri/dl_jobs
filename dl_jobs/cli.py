@@ -92,7 +92,7 @@ def cli(ctx):
     type=bool)
 @click.pass_context
 def run(ctx,method,dev,noisy,print_logs,image,args_list):
-    if re.search('.',method):
+    if re.search(r'\.',method):
         parts=method.split('.')
         method=parts[-1]
         module='.'.join(parts[:-1])
