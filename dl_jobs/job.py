@@ -196,7 +196,7 @@ class DLJob(object):
         self.tasks=async_func.map(self.args_list)
         self._print("running...")
         if self.noisy: utils.line()
-        for task in as_completed(tasks):
+        for task in as_completed(self.tasks):
             if self.noisy: utils.vspace(1)
             if task.is_success:
                 self._print(task.result,plain_text=True)
