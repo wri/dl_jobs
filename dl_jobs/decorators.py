@@ -10,3 +10,10 @@ def as_json(func):
             if out is None: out={}
             return json.dumps(out)
     return decorator
+
+
+
+def expand_kwargs(func):
+    def decorator(kwargs):
+        return func(**kwargs)
+    return decorator
