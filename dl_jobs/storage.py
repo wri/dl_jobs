@@ -1,8 +1,12 @@
 from __future__ import print_function
 import os
+import warnings
 from descarteslabs.client.services.storage import Storage
 import dl_jobs.image_io as io
 import dl_jobs.config as c
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
+
 DLS_ROOT=c.get('dls_root')
 
 def file_key(*key_parts,key=None,root=DLS_ROOT):

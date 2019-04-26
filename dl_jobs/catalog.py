@@ -1,5 +1,9 @@
 from __future__ import print_function
+import warnings
 import descarteslabs as dl
+from dl_jobs.decorators import as_json
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
 
 OUTPUT_BANDS=[
     'ndvi',

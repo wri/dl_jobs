@@ -47,7 +47,10 @@ class Timer(object):
     def duration(self):
         delta=self._end_time-self._start_time
         return str(delta).split('.')[0]
+        
 
+    def now(self):
+        return datetime.now().strftime(self.ts_fmt)
 
 #
 # OUTPUT

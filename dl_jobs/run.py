@@ -1,19 +1,22 @@
 from __future__ import print_function
 import os,sys
+import warnings
 from importlib import import_module
 import json
 from pprint import pprint
 from descarteslabs.client.services.tasks import Tasks, as_completed
 import dl_jobs.config as c
 import dl_jobs.utils as utils
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 sys.path.append(os.getcwd())
+
 #
 # DEFAULTS
 #
 DL_IMAGE=c.get('dl_image')
 IS_DEV=c.get('is_dev')
 MODULE_DIR=c.get('module_dir')
-
+CONFIG_METHODS='CONFIG_METHODS'
 
 
 #
@@ -21,16 +24,21 @@ MODULE_DIR=c.get('module_dir')
 #
 def launch(module,method='task',dev=IS_DEV,args=[]):
     timer, module, method_name, dev=_setup(module,method,dev)
-    func=_create_func(timer,module,method_name,dev,method=method)
-    task=_run_task(timer,func,dev=dev,args=args)
+    func,args,kwargs,args_list=_create_async_func
+    if args_list:
+        task=_run_tasks(
+            timer,
+            func,
+            dev=dev,
+            args_list=args_list )    
+    else:
+        task=_run_task(
+            timer,
+            func,
+            dev=dev,
+            *job.get('args'),
+            **job.get('kwargs') )
     return task
-
-
-def launch_tasks(module,method='task',dev=IS_DEV,args_list=[]):
-    timer, module, method_name, dev=_setup(module,method,dev)
-    func=_create_func(timer,module,method_name,dev,method=method)
-    tasks=_run_tasks(timer,func,dev=dev,args=args_list)
-    return tasks
 
 
 #
@@ -49,39 +57,44 @@ def _setup(module,method,dev):
     return timer, module, method_name, dev
 
 
-def _create_func(timer,module,method_name,dev,method='task'):
-    print("CREATE FUNCTION:")
-    print('- name: {}'.format(method_name))
-    # create task group
-    if dev:
-        func=getattr(module,method)
-        print("- dev created")
-    else:
-        client = Tasks()
-        func = client.create_function(
-            method_name,
-            name=method_name,
-            image=DL_IMAGE,
-            include_data=module.DATA,
-            include_modules=module.MODULES,
-            requirements=module.REQUIREMENTS,
-            gpus=module.GPUS
-        )
-        print("- async func created")
+def _get_func(module,method_name,args,dev):
+    job=getattr(module,method_name)(*args)
+    if isinstance(job,dict):
+        if dev:
+            func=job['func']
+            print("- dev created")
+        else:
+            func=_create_async_func(timer,job['func'])
+            print("- async func created")
+    args_list=job.get('args_list')
+
+
+
+def _create_async_func(timer,func):
+    client = Tasks()
+    func = client.create_function(
+        func,
+        name=method_name,
+        image=DL_IMAGE,
+        include_data=module.DATA,
+        include_modules=module.MODULES,
+        requirements=module.REQUIREMENTS,
+        gpus=module.GPUS
+    )
     return func
 
 
-def _run_task(timer,func,dev,args=[]):
+def _run_task(timer,func,dev,*args,**kwargs):
     print('RUN TASK:')
     print('- args: {}'.format(args))
     if dev:
         print('- execute dev task:')
-        result=func(*args)
+        result=func(*args,**kwargs)
         log=False
         task={'DEV':True}
     else:
         print("- submitting a task")
-        task=func(*args)
+        task=func(*args,**kwargs)
         print("- waiting for the task to complete...")
         result=task.result
         log=task.log.decode('unicode_escape')
@@ -103,18 +116,18 @@ def _run_task(timer,func,dev,args=[]):
     return task
 
 
-def _run_tasks(timer,func,dev=IS_DEV,args_list=[]):
+def _run_tasks(timer,func,dev,args_list=[]):
     if isinstance(args_list,int):
         args_list=range(args_list)
     print('RUN TASKS:')
     print("- submitting tasks")
-    print('- args_list: {}'.format(args_list))        
-    tasks = func.map(args_list)
-    # print the shape of the image array returned by each task
+    print('- nb_args_list: {}'.format(len(args_list)))     
     print("- starting to wait for task completions")
     if dev:
+        tasks=map(func,args_list)
         print("- dev-mode complete")
     else:
+        tasks=func.map(args_list)
         for task in as_completed(tasks):
             if task.is_success:
                 print(task.result)
