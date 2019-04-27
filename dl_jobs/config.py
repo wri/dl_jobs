@@ -19,6 +19,8 @@ _DEFAULTS={
 }
 
 
+
+
 #
 # LOAD CONFIG
 #
@@ -26,6 +28,11 @@ if os.path.exists(c.DL_JOBS_CONFIG_PATH):
     _CONFIG=yaml.safe_load(open(c.DL_JOBS_CONFIG_PATH))
 else:
     _CONFIG={}
+
+
+def get_image(image):
+    """ dl_image from dl_image or image-key (py27,py27_gpu,py36,...) """
+    return c.IMAGES.get(image,image)
 
 
 def get(key):
@@ -46,7 +53,7 @@ def generate(
     """ generate config file
     """
     config={
-        'dl_image': dl_image,
+        'dl_image': get_image(dl_image),
         'dls_root': dls_root,
         'is_dev': is_dev,
         'module_dir': module_dir,

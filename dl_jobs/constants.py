@@ -2,15 +2,33 @@ from __future__ import print_function
 """ CONSTANTS
 """
 #
+# DL_IMAGES
+#
+PY27='us.gcr.io/dl-ci-cd/images/tasks/public/py2/default:v2019.04.18-13-g565aebde'
+PY27_GPU='us.gcr.io/dl-ci-cd/images/tasks/public/py2-gpu/default:v2019.04.18-13-g565aebde'
+PY36='us.gcr.io/dl-ci-cd/images/tasks/public/py3.6/default:v2019.04.18-13-g565aebde'
+PY36_GPU='us.gcr.io/dl-ci-cd/images/tasks/public/py3.6-gpu/default:v2019.04.18-13-g565aebde'
+PY37='us.gcr.io/dl-ci-cd/images/tasks/public/py3.7/default:v2019.02.12'
+
+IMAGES={
+    'py27': PY27,   
+    'py27_gpu': PY27_GPU,   
+    'py36': PY36,   
+    'py36_gpu': PY36_GPU,   
+    'py37': PY37,   
+}
+
+#
 # USER CONFIG:
 #
-DL_IMAGE='us.gcr.io/dl-ci-cd/images/tasks/public/py3.7/default:v2019.02.12'
+DL_IMAGE=PY37
 DLS_ROOT='dl_jobs'
 IS_DEV=True
 NOISY=True
 MODULE_DIR='run'
 PRINT_LOGS=True
 DEFAULT_METHOD='task'
+
 
 
 #
