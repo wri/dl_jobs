@@ -13,7 +13,10 @@ def as_json(func):
 
 
 
-def expand_kwargs(func):
-    def decorator(kwargs):
-        return func(**kwargs)
+def expand_args(func):
+    def decorator(args,kwargs={}):
+        if (not kwargs) and isinstance(args,dict):
+            kwargs=args
+            args=[]
+        return func(*args,**kwargs)
     return decorator
