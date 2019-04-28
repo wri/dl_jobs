@@ -43,7 +43,7 @@ def launch(
     kwargs['noisy']=noisy
     job=job_method(*args,**kwargs)
     if dev is not None:
-        job.platform_job=dev
+        job.platform_job=(not dev)
     job.run()
     if print_logs:
         job.print_logs()
