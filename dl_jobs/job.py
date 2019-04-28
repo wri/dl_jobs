@@ -196,8 +196,8 @@ class DLJob(object):
 
 
     def _run_platform_tasks(self,async_func):
-        if self.noisy: utils.vspace()
         self.tasks=async_func.map(self.args_list)
+        self._print("nb_tasks: {}".format(len(self.tasks)))
         self._response_divider(True,False)
         for task in as_completed(self.tasks):
             if self.noisy: utils.vspace(1)
