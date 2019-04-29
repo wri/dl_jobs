@@ -52,12 +52,37 @@ class Timer(object):
     def now(self):
         return datetime.now().strftime(self.ts_fmt)
 
+
+
+#
+# HELPERS
+#
+def args_kwargs(ctx_args):
+    args=[]
+    kwargs={}
+    for a in ctx_args:
+        if re.search('=',a):
+            k,v=a.split('=')
+            kwargs[k]=v
+        else:
+            args.append(a)
+    return args,kwargs
+
+
+def truthy(value):
+    if isinstance(value,bool) or isinstance(value,int):
+        return value
+    elif isinstance(value,str):
+        value=value.lower()
+        return value not in FALSEY
+    else:
+        raise ValueError('truthy: value must be str,int,bool')
+
+
+
 #
 # OUTPUT
 #
-
-
-
 def vspace(n=2):
     print("\n"*n)
 
