@@ -257,10 +257,10 @@ class DLJob(object):
             if task.is_success:
                 self._print(task.result,plain_text=True)
             else:
-                nb.line("*")
+                utils.line("*")
                 self._print(task.exception,plain_text=True)
                 self._print(task.log,plain_text=True)
-                nb.line("*")
+                utils.line("*")
 
 
     def _response_divider(self,head=False,last_space=True):
