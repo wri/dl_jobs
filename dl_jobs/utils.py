@@ -70,17 +70,6 @@ def args_kwargs(ctx_args):
     return args,kwargs
 
 
-def truthy(value):
-    if isinstance(value,bool) or isinstance(value,int):
-        return value
-    elif isinstance(value,str):
-        value=value.lower()
-        return value not in FALSEY
-    else:
-        raise ValueError('truthy: value must be str,int,bool')
-
-
-
 #
 # OUTPUT
 #

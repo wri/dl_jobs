@@ -15,6 +15,7 @@ sys.path.append(os.getcwd())
 PLATFORM_JOB=False
 NAME_TMPL='dljob_{}'
 HEADER_TMPL='DLJob.{}:'
+NO_JOB_TMPL='[WARNING] DLJob.run: no job found for {}.{}'
 TRACE_TMPL='- {}'
 DL_IMAGE=c.get('dl_image')
 IS_DEV=c.get('is_dev')
@@ -49,11 +50,14 @@ def run(
     kwargs['args_list']=args_list
     kwargs['noisy']=noisy
     job=job_method(*args,**kwargs)
-    if dev is not None:
-        job.platform_job=(not dev)
-    job.run()
-    if print_logs:
-        job.print_logs()
+    if job:
+        if dev:
+            job.platform_job=(not dev)
+        job.run()
+        if print_logs:
+            job.print_logs()
+    else:
+        print(NO_JOB_TMPL.format(module_name,method_name))
 
 
 
@@ -81,7 +85,7 @@ class DLJob(object):
     def __init__(self,
             module_name,
             method_name,
-            dl_image,
+            dl_image=None,
             args_list=None,
             modules=None,
             requirements=None,
@@ -157,7 +161,6 @@ class DLJob(object):
         self._print("start: {}".format(self.timer.start()))
         self._print("local_run",True)
         func=DLJob.get_method(self.module_name,self.method_name)
-        self._print("running...")
         self._response_divider(True)
         if self.args_list:
             out=map(func,self.args_list)

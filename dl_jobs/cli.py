@@ -22,7 +22,6 @@ ARG_KWARGS_SETTINGS={
     'ignore_unknown_options': True,
     'allow_extra_args': True
 }
-FALSEY=['false','none','no','null','f','n','0']
 
 
 
