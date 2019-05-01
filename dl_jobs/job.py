@@ -253,7 +253,15 @@ class DLJob(object):
 
     def _run_platform_tasks(self,async_func):
         self.tasks=async_func.map(self.args_list)
-        self._print("nb_tasks: {}".format(len(self.tasks)))
+        nb_tasks=len(self.tasks)
+        sample_ids=[t.tuid for t in self.tasks[:4]]
+        if nb_tasks>4:
+            elps=['...']
+        else:
+            elps=[]
+        self._print("group_id: {}".format(self.tasks[0].guid))
+        self._print("nb_tasks: {}".format(nb_tasks))
+        self._print("task_ids: {}".format(sample_ids+elps))
         self._response_divider(True,False)
         for task in as_completed(self.tasks):
             if self.noisy: utils.vspace(1)
