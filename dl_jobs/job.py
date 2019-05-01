@@ -2,6 +2,7 @@ from __future__ import print_function
 import os,sys
 import warnings
 from importlib import import_module
+import logging
 from descarteslabs.client.services.tasks import Tasks, as_completed
 import dl_jobs.config as c
 import dl_jobs.utils as utils
@@ -20,6 +21,8 @@ TRACE_TMPL='- {}'
 DL_IMAGE=c.get('dl_image')
 IS_DEV=c.get('is_dev')
 NOISY=c.get('noisy')
+LOG=c.get('log')
+LOG_DIR=c.get('log_dir')
 PRINT_LOGS=c.get('print_logs')
 MODULE_DIR=c.get('module_dir')
 
@@ -97,7 +100,8 @@ class DLJob(object):
             platform_job=PLATFORM_JOB,
             name=None,
             noisy=True,
-            log=None,
+            log=LOG,
+            log_dir=LOG_DIR,
             *args,
             **kwargs):
         self.timer=utils.Timer()
@@ -107,7 +111,8 @@ class DLJob(object):
             self.module_name,
             self.method_name)
         self.name=self._name(name,False)
-        self.logger=self._logger(log)
+        self.log=log
+        self.log_dir=log_dir
         self.noisy=noisy
         self.dl_image=dl_image
         self.args, self.kwargs=self._args(args,kwargs)
@@ -160,8 +165,10 @@ class DLJob(object):
 
     def local_run(self):
         self.name=self._name(self.name)
+        start=self.timer.start()
+        self._set_logger(timestamp=start)
         self._print(self.name,header=True)
-        self._print("start: {}".format(self.timer.start()))
+        self._print("start: {}".format(start))
         self._print("local_run",True)
         func=DLJob.get_method(self.module_name,self.method_name)
         self._response_divider(True)
@@ -174,13 +181,16 @@ class DLJob(object):
         self._response_divider()
         self._print("complete: {}".format(self.timer.stop()))
         self._print("duration: {}".format(self.timer.duration()))
+        self._close_logger()
         return out
 
 
     def platform_run(self):
         self.name=self._name(self.name)
+        start=self.timer.start()
+        self._set_logger(timestamp=start)
         self._print(self.name,header=True)
-        self._print("start: {}".format(self.timer.start()))
+        self._print("start: {}".format(start))
         self._print("platform_run",True)
         async_func=self._create_async_func()
         if self.args_list:
@@ -190,6 +200,7 @@ class DLJob(object):
         self._response_divider()
         self._print("complete: {}".format(self.timer.stop()))
         self._print("duration: {}".format(self.timer.duration()))
+        self._close_logger()
         return out
 
 
@@ -227,11 +238,32 @@ class DLJob(object):
         return name
 
 
-    def _logger(self,log):
-        if log:
-            """ TODO: SET UP LOGGER """
-            log=None
-        return log
+    def _set_logger(self,timestamp=None):
+        if self.log:
+            if isinstance(self.log,str):
+                log_filename=self.log
+            else:
+                if not timestamp:
+                    timestamp=self.timer.now()
+                log_filename=f'{self.name}_{timestamp}.log'
+            if self.log_dir:
+                os.makedirs(self.log_dir,exist_ok=True)
+                log_filename=f'{self.log_dir}/{log_filename}'
+            self.file_handler=logging.FileHandler(log_filename)
+            self.logger=logging.getLogger(__name__)
+            self.logger.addHandler(self.file_handler)
+            self.logger.setLevel(logging.DEBUG)
+            self.logger.info(log_filename)
+        else:
+            self.logger=False
+            self.file_handler=False
+
+
+    def _close_logger(self):
+        if self.file_handler:
+            self.logger.removeHandler(self.file_handler)
+            self.logger=None
+            self.file_handler=None
 
 
     def _create_async_func(self):
@@ -288,7 +320,7 @@ class DLJob(object):
 
 
     def _print(self,msg,header=False,plain_text=False,force=False):
-        if not utils.surppress(msg):
+        if msg and (not utils.suppress(msg)):
             if (not plain_text) and header:
                 if force or self.noisy: utils.vspace()
                 msg=HEADER_TMPL.format(msg)
@@ -297,7 +329,7 @@ class DLJob(object):
             if force or self.noisy:
                 print(msg)
             if self.logger:
-                pass
+                self.logger.info(msg)
 
 
 

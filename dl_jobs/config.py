@@ -15,7 +15,9 @@ _DEFAULTS={
     'print_logs': c.PRINT_LOGS,
     'default_method': c.DEFAULT_METHOD,
     'noisy': c.NOISY,
-    'surppress': c.SURPPRESS
+    'suppress': c.SUPPRESS,
+    'log': c.LOG,
+    'log_dir': c.LOG_DIR
 }
 
 
@@ -45,7 +47,9 @@ def generate(
         is_dev=c.IS_DEV,
         module_dir=c.MODULE_DIR,
         noisy=c.NOISY,
-        surppress=c.SURPPRESS,
+        suppress=c.SUPPRESS,
+        log_dir=c.LOG_DIR,
+        log=c.LOG,
         print_logs=c.PRINT_LOGS,
         default_method=c.DEFAULT_METHOD,
         force=False):
@@ -59,7 +63,9 @@ def generate(
         'print_logs': print_logs,
         'default_method': default_method,
         'noisy': noisy,
-        'surppress': surppress }
+        'suppress': suppress,
+        'log': log,
+        'log_dir': log_dir }
     if not force and os.path.exists(c.DL_JOBS_CONFIG_PATH):
         _log(c.DL_JOBS_CONFIG_EXISTS,True,level="ERROR")
     else:

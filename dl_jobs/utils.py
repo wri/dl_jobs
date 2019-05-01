@@ -3,7 +3,7 @@ import re
 import pickle
 from datetime import datetime
 import dl_jobs.config as c
-SURPPRESS=c.get('surppress')
+SUPPRESS=c.get('suppress')
 
 
 #
@@ -89,10 +89,10 @@ def log(msg,noisy,level='INFO'):
         print("[{}] DL_JOBS: {}".format(level,msg))
 
 
-def surppress(msg):
+def suppress(msg):
     if msg:
         msg=msg.lower()
-        return next((w for w in SURPPRESS if w.lower() in msg),False)
+        return next((w for w in SUPPRESS if w.lower() in msg),False)
 
 
 
