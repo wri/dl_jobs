@@ -28,6 +28,7 @@ NOISY=True
 MODULE_DIR='run'
 PRINT_LOGS=True
 DEFAULT_METHOD='task'
+SURPPRESS=['DeprecationWarning']
 
 
 

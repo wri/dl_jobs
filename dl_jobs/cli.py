@@ -3,7 +3,7 @@ import os,sys
 sys.path.append(os.environ.get('PROJECT_DIR','..'))
 import re
 import click
-import dl_jobs.run
+import dl_jobs.job as job
 import dl_jobs.config as c
 import dl_jobs.utils as utils
 #
@@ -72,7 +72,7 @@ def run(ctx,method,dev,noisy,print_logs,image):
         module=method
         method=DEFAULT_METHOD
     args,kwargs=utils.args_kwargs(ctx.args)
-    dl_jobs.job.run(
+    job.run(
         module_name=module,
         method_name=method,
         dl_image=image,

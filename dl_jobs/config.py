@@ -2,7 +2,6 @@ from __future__ import print_function
 import os.path
 import warnings
 import yaml
-import dl_jobs.utils as utils
 import dl_jobs.constants as c
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 #
@@ -15,10 +14,9 @@ _DEFAULTS={
     'module_dir': c.MODULE_DIR,
     'print_logs': c.PRINT_LOGS,
     'default_method': c.DEFAULT_METHOD,
-    'noisy': c.NOISY
+    'noisy': c.NOISY,
+    'surppress': c.SURPPRESS
 }
-
-
 
 
 #
@@ -47,6 +45,7 @@ def generate(
         is_dev=c.IS_DEV,
         module_dir=c.MODULE_DIR,
         noisy=c.NOISY,
+        surppress=c.SURPPRESS,
         print_logs=c.PRINT_LOGS,
         default_method=c.DEFAULT_METHOD,
         force=False):
@@ -59,13 +58,20 @@ def generate(
         'module_dir': module_dir,
         'print_logs': print_logs,
         'default_method': default_method,
-        'noisy': noisy }
+        'noisy': noisy,
+        'surppress': surppress }
     if not force and os.path.exists(c.DL_JOBS_CONFIG_PATH):
-        utils.log(c.DL_JOBS_CONFIG_EXISTS,True,level="ERROR")
+        _log(c.DL_JOBS_CONFIG_EXISTS,True,level="ERROR")
     else:
         with open(c.DL_JOBS_CONFIG_PATH,'w+') as file:
             file.write("# {}\n".format(c.DL_JOBS_CONFIG_COMMENT))
             file.write(yaml.safe_dump(config, default_flow_style=False))
-        utils.log(c.DL_JOBS_CONFIG_CREATED,noisy)
+        _log(c.DL_JOBS_CONFIG_CREATED,noisy)
 
 
+#
+# INTERNAL
+#
+def _log(msg,noisy,level='INFO'):
+    if noisy:
+        print("[{}] DL_JOBS: {}".format(level,msg))

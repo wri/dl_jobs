@@ -24,8 +24,6 @@ PRINT_LOGS=c.get('print_logs')
 MODULE_DIR=c.get('module_dir')
 
 
-
-
 """
 #
 # DLJob: RUNNER
@@ -49,15 +47,20 @@ def run(
     kwargs['dl_image']=dl_image
     kwargs['args_list']=args_list
     kwargs['noisy']=noisy
-    job=job_method(*args,**kwargs)
-    if job:
-        if dev:
-            job.platform_job=(not dev)
-        job.run()
-        if print_logs:
-            job.print_logs()
-    else:
-        print(NO_JOB_TMPL.format(module_name,method_name))
+    jobs=job_method(*args,**kwargs)
+    if not isinstance(jobs,list):
+        jobs=[jobs]
+    nb_jobs=len(jobs)
+    for job in jobs:
+        if job:
+            if dev:
+                job.platform_job=(not dev)
+            job.run()
+            if print_logs:
+                job.print_logs()
+        if noisy and (nb_jobs>1): utils.line()
+        else:
+            print(NO_JOB_TMPL.format(module_name,method_name))
 
 
 
@@ -285,15 +288,16 @@ class DLJob(object):
 
 
     def _print(self,msg,header=False,plain_text=False,force=False):
-        if (not plain_text) and header:
-            if force or self.noisy: utils.vspace()
-            msg=HEADER_TMPL.format(msg)
-        else:
-            msg=TRACE_TMPL.format(msg)
-        if force or self.noisy:
-            print(msg)
-        if self.logger:
-            pass
+        if not utils.surppress(msg):
+            if (not plain_text) and header:
+                if force or self.noisy: utils.vspace()
+                msg=HEADER_TMPL.format(msg)
+            else:
+                msg=TRACE_TMPL.format(msg)
+            if force or self.noisy:
+                print(msg)
+            if self.logger:
+                pass
 
 
 

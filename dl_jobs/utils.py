@@ -2,6 +2,9 @@ from __future__ import print_function
 import re
 import pickle
 from datetime import datetime
+import dl_jobs.config as c
+SURPPRESS=c.get('surppress')
+
 
 #
 # FILES
@@ -84,3 +87,12 @@ def line(char='-',length=100):
 def log(msg,noisy,level='INFO'):
     if noisy:
         print("[{}] DL_JOBS: {}".format(level,msg))
+
+
+def surppress(msg):
+    if msg:
+        msg=msg.lower()
+        return next((w for w in SURPPRESS if w.lower() in msg),False)
+
+
+
