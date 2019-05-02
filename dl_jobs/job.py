@@ -245,10 +245,11 @@ class DLJob(object):
             else:
                 if not timestamp:
                     timestamp=self.timer.now()
-                log_filename=f'{self.name}_{timestamp}.log'
+                log_filename='{}_{}.log'.format(self.name,timestamp)
             if self.log_dir:
-                os.makedirs(self.log_dir,exist_ok=True)
-                log_filename=f'{self.log_dir}/{log_filename}'
+                if not os.path.exists(self.log_dir):
+                    os.makedirs(self.log_dir)
+                log_filename='{}/{}'.format(self.log_dir,log_filename)
             self.file_handler=logging.FileHandler(log_filename)
             self.logger=logging.getLogger(__name__)
             self.logger.addHandler(self.file_handler)
