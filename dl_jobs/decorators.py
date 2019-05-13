@@ -32,9 +32,20 @@ def as_json(func):
         else:
             return_as_dict=False
         out=func(*args,**kwargs)
-        if return_as_dict or isinstance(out,str) or isinstance(out,unicode):
+        if return_as_dict or _is_str(out):
             return out
         else:
             if out is None: out={}
             return json.dumps(out)
     return decorator
+
+
+def _is_str(value):
+    if isinstance(value,str):
+        return True
+    else:
+        try: 
+            is_str=isinstance(out,unicode)
+        except:
+            is_str=False
+        return is_str

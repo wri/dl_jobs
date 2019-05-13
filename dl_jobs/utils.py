@@ -92,7 +92,8 @@ def log(msg,noisy,level='INFO'):
 def suppress(msg):
     if msg:
         msg=msg.lower()
-        return next((w for w in SUPPRESS if w.lower() in msg),False)
-
+        return next((w for w in SUPPRESS if str(w).lower() in str(msg)),False)
+    else:
+        return True
 
 

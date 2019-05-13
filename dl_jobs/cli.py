@@ -85,24 +85,19 @@ def run(ctx,method,dev,noisy,print_logs,image):
 
 
 
-@click.command(name='config',help='generate config file')
-@click.argument('dl_image',default=c.get('dl_image'))
-@click.argument('dls_root',default=c.get('dls_root'))
-@click.argument('is_dev',default=c.get('is_dev'))
-@click.argument('noisy',default=c.get('noisy'))
+@click.command(
+    name='config',    
+    help='generate config file: pass kwargs (ie $dl_jobs config dl_image=py36 dev=true)',
+    context_settings=ARG_KWARGS_SETTINGS ) 
 @click.option(
     '--force',
     default=False,
     help='if true overwrite existing config',
     type=bool)
 @click.pass_context
-def generate_config(ctx,dl_image,dls_root,is_dev,noisy,force):
-    c.generate(
-        dl_image=dl_image,
-        dls_root=dls_root,
-        is_dev=is_dev,
-        noisy=noisy,
-        force=force)
+def generate_config(ctx,force):
+    _,kwargs=utils.args_kwargs(ctx.args)
+    c.generate( force=force, **kwargs )
 
 
 #

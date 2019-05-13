@@ -4,20 +4,14 @@ _CLI and Helper modules for managing [DLTasks](https://docs.descarteslabs.com/gu
 
 ---
 
-##### MODULE
-
-- `dl_jobs.run`
-
-```python
-run.launch('np_tests')
-```
-
----
-
 ##### CLI
 
 ```bash
-$ dl_jobs task np_tests
+# generate config 
+$ dl_jobs config ...
+
+# run job
+$ dl_jobs run module[.methods] ...
 ```
 
 ```bash
@@ -29,15 +23,38 @@ Options:
 
 Commands:
   config  generate config file
-  task    args: see module
-  tasks   args: see module
+  run     method: module_name or full method <module_name.method_name>
+
+
+
+$ dl_jobs run --help
+Usage: dl_jobs run [OPTIONS] METHOD
+
+  method: module_name or full method <module_name.method_name>
+
+Options:
+  --dev BOOLEAN         <bool> Execute without DLPlatform
+  --noisy BOOLEAN       <bool> be noisy
+  --print_logs BOOLEAN  <bool> print log after execution
+  --image TEXT          <str> dl image
+  --help                Show this message and exit.
+```
+
+---
+
+##### MODULE
+
+- `dl_jobs.run`
+
+```python
+job=DLJob(...)
+job.run()
 ```
 
 ---
 
 ##### HELPERS
 
-- `dl_jobs.catalog`
-- `dl_jobs.storage` 
+- `dl_jobs.decorators`
 - `dl_jobs.image_io`
 - `dl_jobs.utils`  
