@@ -30,11 +30,6 @@ else:
     _CONFIG={}
 
 
-def get_image(image):
-    """ dl_image from dl_image or image-key (py27,py27_gpu,py36,...) """
-    return c.IMAGES.get(image,image)
-
-
 def get(key):
     """ get value
     """
@@ -56,14 +51,14 @@ def generate(
     """ generate config file
     """
     config={
-        'dl_image': get_image(dl_image),
+        'dl_image': _get_image(dl_image),
         'dls_root': dls_root,
-        'is_dev': is_dev,
+        'is_dev': _truthy(is_dev),
         'module_dir': module_dir,
-        'print_logs': print_logs,
+        'print_logs': _truthy(print_logs),
         'default_method': default_method,
-        'noisy': noisy,
-        'suppress': suppress,
+        'noisy': _truthy(noisy),
+        'suppress': _to_arr(suppress),
         'log': log,
         'log_dir': log_dir }
     if not force and os.path.exists(c.DL_JOBS_CONFIG_PATH):
@@ -78,6 +73,32 @@ def generate(
 #
 # INTERNAL
 #
+_FALSEY=['false','none','no','null','f','n','0']
+
+
+def _get_image(image):
+    """ dl_image from dl_image or image-key (py27,py27_gpu,py36,...) """
+    return c.IMAGES.get(image,image)
+
+
+def _truthy(value):
+    if isinstance(value,str):
+        value=value.lower()
+        return value not in _FALSEY
+    else:
+        raise value
+
+
+def _to_arr(value):
+    if isinstance(value,str):
+        return value.split(',')
+    else:
+        return value
+
+
 def _log(msg,noisy,level='INFO'):
     if noisy:
         print("[{}] DL_JOBS: {}".format(level,msg))
+
+
+

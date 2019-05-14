@@ -44,8 +44,6 @@ Options:
 
 ##### MODULE
 
-- `dl_jobs.run`
-
 ```python
 job=DLJob(...)
 job.run()
