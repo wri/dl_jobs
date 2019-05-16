@@ -2,6 +2,7 @@ import json
 
 
 def expand_args(func):
+    """ expand arg-list/kwarg-dict to args/kwargs """
     def decorator(args=[],kwargs={}):
         if (not kwargs) and isinstance(args,dict):
             kwargs=args
@@ -11,6 +12,7 @@ def expand_args(func):
 
 
 def attempt(func):
+    """ catch exception and return as dict """
     def decorator(*args,**kwargs):
         try:
             out=func(*args,**kwargs)
@@ -24,6 +26,7 @@ def attempt(func):
 
 
 def as_json(func):
+    """ convert funct output to json """
     def decorator(*args,**kwargs):
         if kwargs:
             return_as_dict=kwargs.pop('return_as_dict',False)

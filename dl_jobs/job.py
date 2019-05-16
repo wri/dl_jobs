@@ -21,6 +21,8 @@ TRACE_TMPL='- {}'
 DL_IMAGE=c.get('dl_image')
 IS_DEV=c.get('is_dev')
 NOISY=c.get('noisy')
+SAVE_RESULTS=c.get('save_results')
+RESULTS_DIR=c.get('results_dir')
 LOG=c.get('log')
 LOG_DIR=c.get('log_dir')
 PRINT_LOGS=c.get('print_logs')
@@ -61,7 +63,8 @@ def run(
             job.run()
             if print_logs:
                 job.print_logs()
-        if noisy and (nb_jobs>1): utils.line()
+                if noisy and (nb_jobs>1): 
+                    utils.line()
         else:
             print(NO_JOB_TMPL.format(module_name,method_name))
 
@@ -100,6 +103,8 @@ class DLJob(object):
             platform_job=PLATFORM_JOB,
             name=None,
             noisy=True,
+            save_results=SAVE_RESULTS,
+            results_dir=RESULTS_DIR,            
             log=LOG,
             log_dir=LOG_DIR,
             *args,
@@ -111,6 +116,8 @@ class DLJob(object):
             self.module_name,
             self.method_name)
         self.name=self._name(name,False)
+        self.save_results=save_results
+        self.results_dir=results_dir        
         self.log=log
         self.log_dir=log_dir
         self.noisy=noisy
@@ -166,7 +173,7 @@ class DLJob(object):
     def local_run(self):
         self.name=self._name(self.name)
         start=self.timer.start()
-        self._set_logger(timestamp=start)
+        self._set_loggers(timestamp=start)
         self._print(self.name,header=True)
         self._print("start: {}".format(start))
         self._print("local_run",True)
@@ -188,7 +195,7 @@ class DLJob(object):
     def platform_run(self):
         self.name=self._name(self.name)
         start=self.timer.start()
-        self._set_logger(timestamp=start)
+        self._set_loggers(timestamp=start)
         self._print(self.name,header=True)
         self._print("start: {}".format(start))
         self._print("platform_run",True)
@@ -238,34 +245,50 @@ class DLJob(object):
         return name
 
 
-    def _set_logger(self,timestamp=None):
-        if self.log:
-            if isinstance(self.log,str):
-                log_filename=self.log
+    def _set_loggers(self,timestamp=None):
+        self.results_file, self.results_handler, self.results_logger=self._get_logger(
+                self.save_results,
+                self.results_dir,
+                'ndjson',
+                timestamp)
+        self.log_file, self.log_handler, self.logger=self._get_logger(
+                self.log,
+                self.log_dir,
+                'log',
+                timestamp)
+
+
+    def _get_logger(self,log,log_dir,ext,timestamp=None):
+        if log:
+            if isinstance(log,str):
+                log_filename=log
             else:
                 if not timestamp:
                     timestamp=self.timer.now()
-                log_filename='{}_{}.log'.format(self.name,timestamp)
-            if self.log_dir:
-                if not os.path.exists(self.log_dir):
-                    os.makedirs(self.log_dir)
-                log_filename='{}/{}'.format(self.log_dir,log_filename)
-            self.file_handler=logging.FileHandler(log_filename)
-            self.logger=logging.getLogger(__name__)
-            self.logger.addHandler(self.file_handler)
-            self.logger.setLevel(logging.DEBUG)
-            self.logger.info(log_filename)
+                log_filename='{}_{}.{}'.format(self.name,timestamp,ext)
+            if log_dir:
+                if not os.path.exists(log_dir):
+                    os.makedirs(log_dir)
+                log_filename='{}/{}'.format(log_dir,log_filename)
+            log_handler=logging.FileHandler(log_filename)
+            logger=logging.getLogger(__name__)
+            logger.addHandler(self.log_handler)
+            logger.setLevel(logging.DEBUG)
+            logger.info(log_filename)
+            return log_filename, log_handler, logger
         else:
-            self.logger=False
-            self.file_handler=False
+            return None, False, False
 
 
-    def _close_logger(self):
-        if self.file_handler:
-            self.logger.removeHandler(self.file_handler)
+    def _close_loggers(self):
+        if self.log_handler:
+            self.logger.removeHandler(self.log_handler)
             self.logger=None
-            self.file_handler=None
-
+            self.log_handler=None
+        if self.results_handler:
+            self.results_logger.removeHandler(self.results_handler)
+            self.results_logger=None
+            self.results_handler=None
 
     def _create_async_func(self):
         return Tasks().create_function(
@@ -284,7 +307,7 @@ class DLJob(object):
         self._print("task_id: {}".format(task.tuid))
         self.tasks=[task]
         self._response_divider(True)
-        self._print(task.result,plain_text=True)
+        self._print(task.result,plain_text=True,result=True)
 
 
     def _run_platform_tasks(self,async_func):
@@ -302,7 +325,7 @@ class DLJob(object):
         for task in as_completed(self.tasks):
             if self.noisy: utils.vspace(1)
             if task.is_success:
-                self._print(task.result,plain_text=True)
+                self._print(task.result,plain_text=True,result=True)
             else:
                 utils.line("*")
                 self._print(task.exception,plain_text=True)
@@ -320,17 +343,20 @@ class DLJob(object):
                 utils.vspace(1)
 
 
-    def _print(self,msg,header=False,plain_text=False,force=False):
-        if msg and (not utils.suppress(msg)):
-            if (not plain_text) and header:
-                if force or self.noisy: utils.vspace()
-                msg=HEADER_TMPL.format(msg)
-            else:
-                msg=TRACE_TMPL.format(msg)
-            if force or self.noisy:
-                print(msg)
-            if self.logger:
-                self.logger.info(msg)
+    def _print(self,msg,header=False,plain_text=False,result=False,force=False):
+        if msg: 
+            if result and self.results_logger:
+                self.results_logger.info(msg)
+            if not utils.suppress(msg):
+                if (not plain_text) and header:
+                    if force or self.noisy: utils.vspace()
+                    msg=HEADER_TMPL.format(msg)
+                else:
+                    msg=TRACE_TMPL.format(msg)
+                if force or self.noisy:
+                    print(msg)
+                if self.logger:
+                    self.logger.info(msg)
 
 
 

@@ -29,6 +29,8 @@ MODULE_DIR='run'
 PRINT_LOGS=True
 DEFAULT_METHOD='task'
 SUPPRESS=['DeprecationWarning']
+SAVE_RESULTS=True
+RESULTS_DIR='results'
 LOG=True
 LOG_DIR='logs'
 
