@@ -1,11 +1,13 @@
 from __future__ import print_function
 import os,sys
+import json
 import warnings
 from importlib import import_module
 import logging
 from descarteslabs.client.services.tasks import Tasks, as_completed
 import dl_jobs.config as c
 import dl_jobs.utils as utils
+import dl_jobs.nd_json as nd_json
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 sys.path.append(os.getcwd())
 """
@@ -115,9 +117,9 @@ class DLJob(object):
         self.method=DLJob.full_method_name(
             self.module_name,
             self.method_name)
-        self.name=self._name(name,False)
+        self.name=self._name(name,False)  
         self.save_results=save_results
-        self.results_dir=results_dir        
+        self.results_dir=results_dir
         self.log=log
         self.log_dir=log_dir
         self.noisy=noisy
@@ -169,10 +171,14 @@ class DLJob(object):
         utils.vspace()
 
 
-
     def local_run(self):
         self.name=self._name(self.name)
         start=self.timer.start()
+        self.results_path=self._get_path(
+            path=self.save_results,
+            ext='nd_json',
+            directory=self.results_dir,
+            timestamp=start)    
         self._set_loggers(timestamp=start)
         self._print(self.name,header=True)
         self._print("start: {}".format(start))
@@ -181,20 +187,26 @@ class DLJob(object):
         self._response_divider(True)
         if self.args_list:
             out=map(func,self.args_list)
-            self._print("{}".format(list(out)))
+            for o in list(out):
+                self._print(o,result=True)
         else:
             out=func(*self.args,**self.kwargs)
-            self._print("{}".format(out))
+            self._print("{}".format(out),result=True)
         self._response_divider()
         self._print("complete: {}".format(self.timer.stop()))
         self._print("duration: {}".format(self.timer.duration()))
-        self._close_logger()
+        self._close_loggers()
         return out
 
 
     def platform_run(self):
         self.name=self._name(self.name)
         start=self.timer.start()
+        self.results_path=self._get_path(
+            path=self.save_results,
+            ext='nd_json',
+            directory=self.results_dir,
+            timestamp=start)    
         self._set_loggers(timestamp=start)
         self._print(self.name,header=True)
         self._print("start: {}".format(start))
@@ -207,7 +219,7 @@ class DLJob(object):
         self._response_divider()
         self._print("complete: {}".format(self.timer.stop()))
         self._print("duration: {}".format(self.timer.duration()))
-        self._close_logger()
+        self._close_loggers()
         return out
 
 
@@ -245,39 +257,32 @@ class DLJob(object):
         return name
 
 
-    def _set_loggers(self,timestamp=None):
-        self.results_file, self.results_handler, self.results_logger=self._get_logger(
-                self.save_results,
-                self.results_dir,
-                'ndjson',
-                timestamp)
-        self.log_file, self.log_handler, self.logger=self._get_logger(
-                self.log,
-                self.log_dir,
-                'log',
-                timestamp)
-
-
-    def _get_logger(self,log,log_dir,ext,timestamp=None):
-        if log:
-            if isinstance(log,str):
-                log_filename=log
-            else:
+    def _get_path(self,path,ext,directory,timestamp=None):
+        if path:
+            if not isinstance(path,str):
                 if not timestamp:
                     timestamp=self.timer.now()
-                log_filename='{}_{}.{}'.format(self.name,timestamp,ext)
-            if log_dir:
-                if not os.path.exists(log_dir):
-                    os.makedirs(log_dir)
-                log_filename='{}/{}'.format(log_dir,log_filename)
-            log_handler=logging.FileHandler(log_filename)
-            logger=logging.getLogger(__name__)
-            logger.addHandler(self.log_handler)
-            logger.setLevel(logging.DEBUG)
-            logger.info(log_filename)
-            return log_filename, log_handler, logger
+                    timestamp=re.sub(' ','.',timestamp)
+                path='{}_{}.{}'.format(self.name,timestamp,ext)
+                if directory:
+                    if not os.path.exists(directory):
+                        os.makedirs(directory)
+                    path='{}/{}'.format(directory,path)
+            return path
+
+
+    def _set_loggers(self,timestamp=None):
+        if self.log:
+            self.log_file=self._get_path(self.log,'log',self.log_dir,timestamp)
+            self.log_handler=logging.FileHandler(self.log_file)
+            self.logger=logging.getLogger(__name__)
+            self.logger.addHandler(self.log_handler)
+            self.logger.setLevel(logging.DEBUG)
+            self.logger.info(self.log_file)
         else:
-            return None, False, False
+            self.log_file=None
+            self.log_handler=False
+            self.logger=False
 
 
     def _close_loggers(self):
@@ -285,10 +290,7 @@ class DLJob(object):
             self.logger.removeHandler(self.log_handler)
             self.logger=None
             self.log_handler=None
-        if self.results_handler:
-            self.results_logger.removeHandler(self.results_handler)
-            self.results_logger=None
-            self.results_handler=None
+
 
     def _create_async_func(self):
         return Tasks().create_function(
@@ -345,8 +347,8 @@ class DLJob(object):
 
     def _print(self,msg,header=False,plain_text=False,result=False,force=False):
         if msg: 
-            if result and self.results_logger:
-                self.results_logger.info(msg)
+            if result and self.results_path:
+                nd_json.write(msg,self.results_path)
             if not utils.suppress(msg):
                 if (not plain_text) and header:
                     if force or self.noisy: utils.vspace()
