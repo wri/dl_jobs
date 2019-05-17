@@ -349,7 +349,6 @@ class DLJob(object):
         results=json.loads(results)
         if isinstance(results,list):
             for result in results:
-                print('\t---',type(result),len(result),result)
                 self._print(result,plain_text=True,result=True)
         else:
             self._print(results,plain_text=True,result=True)
