@@ -8,7 +8,9 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 # DEFALUTS 
 #
 _DEFAULTS={
-    'dl_image': c.DL_IMAGE,
+    'cpu_job': c.CPU_JOB,
+    'cpu_image': c.CPU_IMAGE,
+    'gpu_image': c.GPU_IMAGE,
     'dls_root': c.DLS_ROOT,
     'is_dev': c.IS_DEV,
     'module_dir': c.MODULE_DIR,
@@ -39,7 +41,9 @@ def get(key):
 
 
 def generate(
-        dl_image=c.DL_IMAGE,
+        cpu_job=c.CPU_JOB,
+        cpu_image=c.CPU_IMAGE,
+        gpu_image=c.GPU_IMAGE,
         dls_root=c.DLS_ROOT,
         is_dev=c.IS_DEV,
         module_dir=c.MODULE_DIR,
@@ -55,7 +59,9 @@ def generate(
     """ generate config file
     """
     config={
-        'dl_image': _get_image(dl_image),
+        'cpu_job': cpu_job,
+        'cpu_image': _get_image(cpu_image),
+        'gpu_image': _get_image(gpu_image),
         'dls_root': dls_root,
         'is_dev': _truthy(is_dev),
         'module_dir': module_dir,

@@ -14,8 +14,11 @@ def read(path):
     return [ _load_line(l) for l in lines ]
 
 
-def _load_line(json_str):
-    return json.loads(_clean(json_str))
+def _load_line(jsn):
+    if isinstance(jsn,str):
+        return json.loads(_clean(jsn))
+    else:
+        return jsn
 
 
 def _clean(json_str):

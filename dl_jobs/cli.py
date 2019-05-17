@@ -12,7 +12,9 @@ import dl_jobs.utils as utils
 IS_DEV=c.get('is_dev')
 NOISY=c.get('noisy')
 PRINT_LOG=c.get('print_logs')
-DL_IMAGE=c.get('dl_image')
+CPU_JOB=c.get('cpu_job')
+CPU_IMAGE=c.get('cpu_image')
+GPU_IMAGE=c.get('gpu_image')
 DEFAULT_METHOD=c.get('default_method')
 DEV_HELP='<bool> Execute without DLPlatform'
 NOISE_HELP='<bool> be noisy'
@@ -41,7 +43,6 @@ def cli(ctx):
     help='method: module_name or full method <module_name.method_name>',
     context_settings=ARG_KWARGS_SETTINGS ) 
 @click.argument('method',type=str)
-# kwargs
 @click.option(
     '--dev',
     help=DEV_HELP,
@@ -58,12 +59,22 @@ def cli(ctx):
     default=PRINT_LOG,
     type=bool)
 @click.option(
-    '--image',
+    '--cpu_job',
     help=DL_IMAGE_HELP,
-    default=DL_IMAGE,
+    default=CPU_JOB,
+    type=str)
+@click.option(
+    '--cpu_image',
+    help=DL_IMAGE_HELP,
+    default=CPU_IMAGE,
+    type=str)
+@click.option(
+    '--gpu_image',
+    help=DL_IMAGE_HELP,
+    default=GPU_IMAGE,
     type=str)
 @click.pass_context
-def run(ctx,method,dev,noisy,print_logs,image):
+def run(ctx,method,dev,noisy,print_logs,cpu_job,cpu_image,gpu_image):
     if re.search(r'\.',method):
         parts=method.split('.')
         method=parts[-1]
@@ -75,7 +86,9 @@ def run(ctx,method,dev,noisy,print_logs,image):
     job.run(
         module_name=module,
         method_name=method,
-        dl_image=image,
+        cpu_job=cpu_job,
+        cpu_image=cpu_image,
+        gpu_image=gpu_image,
         args=args,
         kwargs=kwargs,
         dev=dev,

@@ -19,8 +19,11 @@ PLATFORM_JOB=False
 NAME_TMPL='dljob_{}'
 HEADER_TMPL='DLJob.{}:'
 NO_JOB_TMPL='[WARNING] DLJob.run: no job found for {}.{}'
+NO_GPUS='[WARNING] (GPUs=0 and cpu_job=False) launching as CPU job'
 TRACE_TMPL='- {}'
-DL_IMAGE=c.get('dl_image')
+CPU_JOB=c.get('cpu_job')
+CPU_IMAGE=c.get('cpu_image')
+GPU_IMAGE=c.get('gpu_image')
 IS_DEV=c.get('is_dev')
 NOISY=c.get('noisy')
 SAVE_RESULTS=c.get('save_results')
@@ -39,7 +42,9 @@ MODULE_DIR=c.get('module_dir')
 def run(
         module_name,
         method_name='task',
-        dl_image=DL_IMAGE,
+        cpu_job=CPU_JOB,
+        cpu_image=CPU_IMAGE,
+        gpu_image=GPU_IMAGE,
         args=[],
         kwargs={},
         args_list=[],
@@ -51,7 +56,9 @@ def run(
     job_method=DLJob.get_method(module_name,method_name)
     if not kwargs:
         kwargs={}
-    kwargs['dl_image']=dl_image
+    kwargs['cpu_job']=cpu_job
+    kwargs['cpu_image']=cpu_image
+    kwargs['gpu_image']=gpu_image
     kwargs['args_list']=args_list
     kwargs['noisy']=noisy
     jobs=job_method(*args,**kwargs)
@@ -96,7 +103,9 @@ class DLJob(object):
     def __init__(self,
             module_name,
             method_name,
-            dl_image=None,
+            cpu_job=CPU_JOB,
+            cpu_image=CPU_IMAGE,
+            gpu_image=GPU_IMAGE,
             args_list=None,
             modules=None,
             requirements=None,
@@ -123,7 +132,9 @@ class DLJob(object):
         self.log=log
         self.log_dir=log_dir
         self.noisy=noisy
-        self.dl_image=dl_image
+        self.cpu_job=cpu_job
+        self.cpu_image=cpu_image
+        self.gpu_image=gpu_image
         self.args, self.kwargs=self._args(args,kwargs)
         self.args_list=self._args_list(args_list)
         self.modules=modules
@@ -293,10 +304,17 @@ class DLJob(object):
 
 
     def _create_async_func(self):
+        if self.cpu_job:
+            image=self.cpu_image
+        elif (not self.gpus):
+            image=self.cpu_image
+            self._print(NO_GPUS,header=True)
+        else:
+            image=self.gpu_image
         return Tasks().create_function(
             self.method,
             name=self.name,
-            image=self.dl_image,
+            image=image,
             include_data=self.data,
             include_modules=self.modules,
             requirements=self.requirements,
@@ -349,9 +367,9 @@ class DLJob(object):
         results=json.loads(results)
         if isinstance(results,list):
             for result in results:
-                self._print(result,plain_text=True,result=True)
+                self._print(self._as_json(result),plain_text=True,result=True)
         else:
-            self._print(results,plain_text=True,result=True)
+            self._print(self._as_json(results),plain_text=True,result=True)
 
 
     def _print(self,msg,header=False,plain_text=False,result=False,force=False):
@@ -368,6 +386,17 @@ class DLJob(object):
                     print(msg)
                 if self.logger:
                     self.logger.info(msg)
+
+
+    def _as_json(self,value):
+        if isinstance(value,str):
+            return value
+        else:
+            return json.dumps(value)
+
+
+
+
 
 
 
