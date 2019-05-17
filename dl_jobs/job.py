@@ -188,10 +188,10 @@ class DLJob(object):
         if self.args_list:
             out=map(func,self.args_list)
             for o in list(out):
-                self._print(o,result=True)
+                self._print_result(o)
         else:
             out=func(*self.args,**self.kwargs)
-            self._print("{}".format(out),result=True)
+            self._print_result(out)
         self._response_divider()
         self._print("complete: {}".format(self.timer.stop()))
         self._print("duration: {}".format(self.timer.duration()))
@@ -309,7 +309,7 @@ class DLJob(object):
         self._print("task_id: {}".format(task.tuid))
         self.tasks=[task]
         self._response_divider(True)
-        self._print(task.result,plain_text=True,result=True)
+        self._print_result(task.result)
 
 
     def _run_platform_tasks(self,async_func):
@@ -327,7 +327,7 @@ class DLJob(object):
         for task in as_completed(self.tasks):
             if self.noisy: utils.vspace(1)
             if task.is_success:
-                self._print(task.result,plain_text=True,result=True)
+                self._print_result(task.result)
             else:
                 utils.line("*")
                 self._print(task.exception,plain_text=True)
@@ -343,6 +343,16 @@ class DLJob(object):
             utils.line()
             if last_space: 
                 utils.vspace(1)
+
+
+    def _print_result(self,results):
+        results=json.loads(results)
+        if isinstance(results,list):
+            for result in results:
+                print('\t---',type(result),len(result),result)
+                self._print(result,plain_text=True,result=True)
+        else:
+            self._print(results,plain_text=True,result=True)
 
 
     def _print(self,msg,header=False,plain_text=False,result=False,force=False):

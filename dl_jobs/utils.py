@@ -2,6 +2,8 @@ from __future__ import print_function
 import re
 import pickle
 from datetime import datetime
+import functools
+import operator
 import dl_jobs.config as c
 
 SUPPRESS=c.get('suppress')
@@ -74,6 +76,14 @@ def args_kwargs(ctx_args):
     return args,kwargs
 
 
+def flat_list(obj):
+    if not isinstance(obj,list):
+        obj=[obj]
+    elif isinstance(obj[0],list):
+        obj=functools.reduce(operator.iconcat, obj, [])
+    return obj
+
+
 #
 # OUTPUT
 #
@@ -92,8 +102,8 @@ def log(msg,noisy,level='INFO'):
 
 def suppress(msg):
     if msg:
-        msg=msg.lower()
-        return next((w for w in SUPPRESS if str(w).lower() in str(msg)),False)
+        msg=str(msg).lower()
+        return next((w for w in SUPPRESS if str(w).lower() in msg),False)
     else:
         return True
 
