@@ -17,7 +17,7 @@ sys.path.append(os.getcwd())
 """
 PLATFORM_JOB=False
 NAME_TMPL='dljob_{}'
-HEADER_TMPL='DLJob.{}:'
+HEADER_TMPL='DLJob.{}: '
 NO_JOB_TMPL='[WARNING] DLJob.run: no job found for {}.{}'
 NO_GPUS='[WARNING] (GPUs=0 and cpu_job=False) launching as CPU job'
 TRACE_TMPL='- {}'
@@ -221,7 +221,7 @@ class DLJob(object):
         self._set_loggers(timestamp=start)
         self._print(self.name,header=True)
         self._print("start: {}".format(start))
-        self._print("platform_run",True)
+        self._print("platform_run",header=True)
         async_func=self._create_async_func()
         if self.args_list:
             out=self._run_platform_tasks(async_func)
