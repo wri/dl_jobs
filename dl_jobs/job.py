@@ -116,6 +116,7 @@ class DLJob(object):
             noisy=True,
             save_results=SAVE_RESULTS,
             results_dir=RESULTS_DIR,            
+            results_timestamp=True,
             log=LOG,
             log_dir=LOG_DIR,
             *args,
@@ -129,6 +130,7 @@ class DLJob(object):
         self.name=self._name(name,False)  
         self.save_results=save_results
         self.results_dir=results_dir
+        self.results_timestamp=results_timestamp
         self.log=log
         self.log_dir=log_dir
         self.noisy=noisy
@@ -189,7 +191,8 @@ class DLJob(object):
             path=self.save_results,
             ext='nd_json',
             directory=self.results_dir,
-            timestamp=start)    
+            timestamp=start,
+            add_timestamp=self.results_timestamp)
         self._set_loggers(timestamp=start)
         self._print(self.name,header=True)
         self._print("start: {}".format(start))
@@ -217,7 +220,8 @@ class DLJob(object):
             path=self.save_results,
             ext='nd_json',
             directory=self.results_dir,
-            timestamp=start)    
+            timestamp=start,
+            add_timestamp=self.results_timestamp)
         self._set_loggers(timestamp=start)
         self._print(self.name,header=True)
         self._print("start: {}".format(start))
@@ -268,17 +272,21 @@ class DLJob(object):
         return name
 
 
-    def _get_path(self,path,ext,directory,timestamp=None):
+    def _get_path(self,path,ext=None,directory=None,timestamp=None,add_timestamp=True):
         if path:
             if not isinstance(path,str):
-                if not timestamp:
-                    timestamp=self.timer.now()
-                    timestamp=re.sub(' ','.',timestamp)
-                path='{}_{}.{}'.format(self.name,timestamp,ext)
+                path=self.name
+                if add_timestamp:
+                    if not timestamp:
+                        timestamp=self.timer.now()
+                        timestamp=re.sub(' ','.',timestamp)
+                    path='{}_{}'.format(path,timestamp)
                 if directory:
                     if not os.path.exists(directory):
                         os.makedirs(directory)
                     path='{}/{}'.format(directory,path)
+                if ext:
+                    path='{}.{}'.format(path,timestamp,ext)
             return path
 
 
