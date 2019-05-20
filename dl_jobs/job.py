@@ -20,6 +20,7 @@ NAME_TMPL='dljob_{}'
 HEADER_TMPL='DLJob.{}: '
 NO_JOB_TMPL='[WARNING] DLJob.run: no job found for {}.{}'
 NO_GPUS='[WARNING] (GPUs=0 and cpu_job=False) launching as CPU job'
+CPU_JOB_WITH_GPUS='[WARNING] cpu_job with GPUs>0, setting GPUs=0'
 TRACE_TMPL='- {}'
 CPU_JOB=c.get('cpu_job')
 CPU_IMAGE=c.get('cpu_image')
@@ -154,36 +155,6 @@ class DLJob(object):
             return self.local_run()
 
 
-    def print_logs(self):
-        self._print(
-            "logs[{}]".format(len(self.tasks)),
-            header=True,
-            force=True)
-        utils.line('=')
-        utils.vspace(1)
-        if self.tasks:
-            for task in self.tasks:
-                self._print(
-                    task.log,
-                    plain_text=True,
-                    force=True)                
-                utils.vspace(1)
-        elif self.platform_job:
-            self._print(
-                'WARNING: no tasks found',
-                plain_text=True,
-                force=True)
-            utils.vspace(1)
-        else:
-            self._print(
-                'INFO: no logs (job run locally)',
-                plain_text=True,
-                force=True)
-            utils.vspace(1)
-        utils.line('=')
-        utils.vspace()
-
-
     def local_run(self):
         self.name=self._name(self.name)
         start=self.timer.start()
@@ -237,6 +208,35 @@ class DLJob(object):
         self._close_loggers()
         return out
 
+
+    def print_logs(self):
+        self._print(
+            "logs[{}]".format(len(self.tasks)),
+            header=True,
+            force=True)
+        utils.line('=')
+        utils.vspace(1)
+        if self.tasks:
+            for task in self.tasks:
+                self._print(
+                    task.log,
+                    plain_text=True,
+                    force=True)                
+                utils.vspace(1)
+        elif self.platform_job:
+            self._print(
+                'WARNING: no tasks found',
+                plain_text=True,
+                force=True)
+            utils.vspace(1)
+        else:
+            self._print(
+                'INFO: no logs (job run locally)',
+                plain_text=True,
+                force=True)
+            utils.vspace(1)
+        utils.line('=')
+        utils.vspace()
 
 
     #
@@ -314,6 +314,9 @@ class DLJob(object):
     def _create_async_func(self):
         if self.cpu_job:
             image=self.cpu_image
+            if self.gpus:
+                self._print(CPU_JOB_WITH_GPUS,header=True)
+                self.gpus=0
         elif (not self.gpus):
             image=self.cpu_image
             self._print(NO_GPUS,header=True)
