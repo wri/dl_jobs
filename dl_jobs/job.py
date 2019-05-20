@@ -379,12 +379,13 @@ class DLJob(object):
 
 
     def _print_result(self,results):
-        results=json.loads(results)
-        if isinstance(results,list):
-            for result in results:
-                self._print(self._as_json(result),plain_text=True,result=True)
-        else:
-            self._print(self._as_json(results),plain_text=True,result=True)
+        if results:
+            results=json.loads(results)
+            if isinstance(results,list):
+                for result in results:
+                    self._print(self._as_json(result),plain_text=True,result=True)
+            else:
+                self._print(self._as_json(results),plain_text=True,result=True)
 
 
     def _print(self,msg,header=False,plain_text=False,result=False,force=False):

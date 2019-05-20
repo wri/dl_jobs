@@ -12,7 +12,11 @@ from dl_jobs.decorators import as_json, expand_args
         * all run methods must return instance(s) of DLJob
 
 """
+MODULES=[
+    'dl_jobs'
+]
 def task(nb_jobs,*args,**kwargs):
+    print("\ndl_jobs.test_jobs.task: create DLJob instance\n")
     base_args=_base_args(nb_jobs,*args,**kwargs)
     platform_job=h.truthy(kwargs.get('platform',False))
     cpu_job=h.truthy(kwargs.get('cpu',True))
@@ -34,10 +38,10 @@ def task(nb_jobs,*args,**kwargs):
         args_list=args_list,
         platform_job=platform_job,
         cpu_job=cpu_job,
+        modules=MODULES,
         noisy=noisy,
         log=False )
     return job
-
 
 
 #
@@ -70,6 +74,7 @@ def return_args(*args,**kwargs):
     Just return the passed data
 
     """
+    print("dl_jobs.test_jobs.return_args: doing work\n")
     return {
         'args': args,
         'kwargs': kwargs
