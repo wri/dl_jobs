@@ -11,6 +11,7 @@ man
 
 # Codebase
 playground.*
+results/
 
 # SUBLIME
 *sftp-config.json*
