@@ -24,6 +24,15 @@ ARG_KWARGS_SETTINGS={
     'ignore_unknown_options': True,
     'allow_extra_args': True
 }
+TEST_JOB_HELP="""test_job: hello-world tasks to test the DLTask system
+Args:
+    nb_jobs: number of tasks to launch
+    *args
+    **kwargs
+Returns:
+    json object with options, args and kwargs passed to the cli
+
+"""
 
 
 
@@ -113,11 +122,73 @@ def generate_config(ctx,force):
     c.generate( force=force, **kwargs )
 
 
+
+
+@click.command(
+    help=TEST_JOB_HELP,
+    context_settings=ARG_KWARGS_SETTINGS ) 
+@click.argument('nb_jobs',type=int)
+@click.option(
+    '--dev',
+    help=DEV_HELP,
+    default=IS_DEV,
+    type=bool)
+@click.option(
+    '--noisy',
+    help=NOISE_HELP,
+    default=NOISY,
+    type=bool)
+@click.option(
+    '--print_logs',
+    help=PRINT_LOGS_HELP,
+    default=PRINT_LOG,
+    type=bool)
+@click.option(
+    '--cpu_job',
+    help=DL_IMAGE_HELP,
+    default=CPU_JOB,
+    type=str)
+@click.option(
+    '--cpu_image',
+    help=DL_IMAGE_HELP,
+    default=CPU_IMAGE,
+    type=str)
+@click.option(
+    '--gpu_image',
+    help=DL_IMAGE_HELP,
+    default=GPU_IMAGE,
+    type=str)
+@click.pass_context
+def test(ctx,nb_jobs,dev,noisy,print_logs,cpu_job,cpu_image,gpu_image):
+    args,kwargs=utils.args_kwargs(ctx.args)
+    args=[nb_jobs]+args
+    kwargs['options']={
+        'dev': dev,
+        'noisy': noisy,
+        'print_logs': print_logs,
+        'cpu_job': cpu_job,
+        'cpu_image': cpu_image,
+        'gpu_image': gpu_image
+    }
+    job.run(
+        module_dir=None,
+        module_name='dl_jobs.test_jobs',
+        cpu_job=cpu_job,
+        cpu_image=cpu_image,
+        gpu_image=gpu_image,
+        args=args,
+        kwargs=kwargs,
+        dev=dev,
+        noisy=noisy,
+        print_logs=print_logs )
+
+
 #
 # MAIN
 #
 cli.add_command(run)
 cli.add_command(generate_config)
+cli.add_command(test)
 if __name__ == "__main__":
     cli()
 

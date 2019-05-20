@@ -51,8 +51,9 @@ def run(
         args_list=[],
         dev=IS_DEV,
         print_logs=PRINT_LOGS,
-        noisy=NOISY):
-    if MODULE_DIR:
+        noisy=NOISY,
+        module_dir=MODULE_DIR):
+    if module_dir:
         module_name='.'.join([MODULE_DIR,module_name])
     job_method=DLJob.get_method(module_name,method_name)
     if not kwargs:
@@ -315,13 +316,16 @@ class DLJob(object):
         if self.cpu_job:
             image=self.cpu_image
             if self.gpus:
-                self._print(CPU_JOB_WITH_GPUS,header=True)
+                self._print(CPU_JOB_WITH_GPUS)
                 self.gpus=0
+            else:
+                self._print('cpu-job')
         elif (not self.gpus):
             image=self.cpu_image
             self._print(NO_GPUS,header=True)
         else:
             image=self.gpu_image
+            self._print('gpu-job [{}]'.format(self.gpus))
         return Tasks().create_function(
             self.method,
             name=self.name,
