@@ -22,9 +22,9 @@ Have Fun!
 
 The CLI has three methods:
 
-1. [`$dl_jobs run ...`](#run): this is the main cli method and enables you to run jobs in your code base as DLTasks.
-2. [`$dl_jobs config ...`](#config): used to generate a config file to store defaults (such as which dl-image to run the job)
-3. [`$dl_jobs test ...`](#test): launches a hello-world style script. Its here as an example, a way to test the DL-platform, and show how cli args, kwargs, and options are handled.
+1. [`dl_jobs run ...`](#run): this is the main cli method and enables you to run jobs in your code base as DLTasks.
+2. [`dl_jobs config ...`](#config): used to generate a config file to store defaults (such as which dl-image to run the job)
+3. [`dl_jobs test ...`](#test): launches a hello-world style script. Its here as an example, a way to test the DL-platform, and show how cli args, kwargs, and options are handled.
 
 <a name="run"/>
 
