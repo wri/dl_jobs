@@ -16,6 +16,7 @@ sys.path.append(os.getcwd())
 #
 """
 PLATFORM_JOB=False
+DEFAULT_METHOD='task'
 NAME_TMPL='dljob_{}'
 HEADER_TMPL='DLJob.{}: '
 NO_JOB_TMPL='[WARNING] DLJob.run: no job found for {}.{}'
@@ -42,7 +43,7 @@ MODULE_DIR=c.get('module_dir')
 """
 def run(
         module_name,
-        method_name='task',
+        method_name=DEFAULT_METHOD,
         cpu_job=CPU_JOB,
         cpu_image=CPU_IMAGE,
         gpu_image=GPU_IMAGE,
@@ -88,9 +89,47 @@ def run(
 #
 """
 class DLJob(object):
-    
+    """ DLJob: a simple wrapper for the DLTasks-API
 
+    NOTES: only `module_name` is required. The others have 
+    defaults (most of which can be set in the config file).
 
+    Args:
+        module_name<str>: module path (ie module_name.submodule_name )
+        method_name<str>: method name 
+        cpu_job<bool>:
+            - if true: job will always run on cpu-image.
+            - if false: job will run on the gpu-image unless gpus=0 
+        cpu_image: address for cpu dl-image
+        gpu_image: address for gpu dl-image
+        args_list<list|None>: 
+            Use when running multiple jobs. A list of args-lists or kwarg-dicts
+            to pass to the job-method referred to in method_name. 
+        modules<list|None>: list of modules to include when creating async_func
+        requirements<list|str|None>: 
+            list of requirements, or path to requirements.txt, to include 
+            when creating async_func
+        data<list|None>: list of modules to include when creating async_func
+        gpus<int|None>: Number of GPUs
+        platform_job<bool>:
+            - if true: run as DLTask.  Note the CLI can override this by passing
+            option (--dev True)
+            - if false: run locally
+        name<str>: name used in naming tasks and log/results files. defaults to method_name.
+        noisy<bool>: more logs/print-outs when noisy
+        save_results<bool|str>: save results as ndjson. if str: use str as filename
+        results_dir<str>: directory to save results  
+        results_timestamp<bool>: add timestamp to results filename
+        log<bool|str>: write logs. if str: use str as filename
+        log_dir<str>: log directory 
+        *args: args for method when launching a single job (otherwise use args_list)
+        **kwargs: kwargs for method when launching a single job (otherwise use args_list)
+
+    Methods:
+        run: launches DLTask(s)
+        ...
+
+    """
     @staticmethod
     def get_method(module_name,method_name):
         module=import_module(module_name)
@@ -104,7 +143,7 @@ class DLJob(object):
 
     def __init__(self,
             module_name,
-            method_name,
+            method_name=DEFAULT_METHOD,
             cpu_job=CPU_JOB,
             cpu_image=CPU_IMAGE,
             gpu_image=GPU_IMAGE,
