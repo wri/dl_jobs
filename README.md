@@ -26,6 +26,9 @@ The CLI has three methods:
 2. [`dl_jobs config ...`](#config): used to generate a config file to store defaults (such as which dl-image to run the job)
 3. [`dl_jobs test ...`](#test): launches a hello-world style script. Its here as an example, a way to test the DL-platform, and show how cli args, kwargs, and options are handled.
 
+When passing boolean OPTIONS to the CLI values of `false,none,no,null,f,n` and `0` evaluate to `False`, all others `True`. If you want the same for specific args or kwargs use `dl_jobs.helpers.truthy`,
+
+
 <a name="run"/>
 
 ###### RUN
@@ -39,7 +42,9 @@ Usage: dl_jobs run [OPTIONS] METHOD [ARGS] [KWARGS]
 
 Options:
 
-  NOTE: All these options can be set through the config file
+  NOTE: 
+    * All these options can be set through the config file
+    * values false,none,no,null,f,n and 0 evaluate to False, all others True
 
   --dev BOOLEAN         <bool> Execute without DLPlatform
   --noisy BOOLEAN       <bool> be noisy
