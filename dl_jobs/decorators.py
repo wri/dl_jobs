@@ -12,7 +12,7 @@ def expand_args(func):
 
 
 def attempt(func):
-    """ catch exception and return as dict """
+    """ catch exception and return exception in dict """
     def decorator(*args,**kwargs):
         try:
             out=func(*args,**kwargs)
@@ -26,7 +26,7 @@ def attempt(func):
 
 
 def as_json(func):
-    """ convert funct output to json """
+    """ convert func output to json """
     def decorator(*args,**kwargs):
         if kwargs:
             return_as_dict=kwargs.pop('return_as_dict',False)

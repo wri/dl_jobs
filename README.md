@@ -10,7 +10,7 @@ This code base is a simple wrapper for the [DLTasks API](https://docs.descartesl
 2. A [DLJob Class](#dljob) that simplifies the boilerplate code for creating/running/monitoring/logging tasks and saving results.
 3. Allows you to easily switch back and forth between running your tasks locally or as a DLJob, making development quicker and easier.
 
-In addition there are a number of [decorators](https://github.com/wri/dl_jobs/blob/master/dl_jobs/decorators.py) and [helper methods](https://github.com/wri/dl_jobs/blob/master/dl_jobs/helpers.py) to make it easy to incorporate `dl_jobs` into your existing code base, along with a light-weight [ndjson](https://github.com/wri/dl_jobs/blob/master/dl_jobs/nd_json.py) reader-writer and a handy [timer](https://github.com/wri/dl_jobs/blob/master/dl_jobs/utils.py).
+In addition there are a number of [decorators](#decorators) and [helper methods](#helpers) to make it easy to incorporate `dl_jobs` into your existing code base, along with a light-weight [ndjson](https://github.com/wri/dl_jobs/blob/master/dl_jobs/nd_json.py) reader-writer and a handy [timer](#timer).
 
 Have Fun!
 
@@ -134,13 +134,58 @@ $ dl_jobs test 2 a b c hello=world --dev True
 * attempt: catch exception and return exception in dict
 * as_json: convert func output to json 
 
+Thanks to the above decorators
+1. The dictionary result gets converted to json so it can be returned used for a DLTask.
+2. If there is an exception it will get caught and returned in json format (along with the args/kwargs calling the method).
+3. Instead of passing (arg1,arg2,kwarg1='...',kwarg2='...') we can pass it two arguments: a list of args ( [arg1,arg2] ), and a kwarg dictionary ({ 'kwarg1':'...', 'kwarg1':'...' }).  This is useful because when passing an `arg_list` to launch multiple jobs
+
+```python
+# example:
+
+@as_json
+@attempt
+@expand_args
+def do_work(arg1,arg2,kwarg1='value1',kwarg2='value2'):
+    ... doing stuff ...
+    return {
+        'results': [1,2,3,4,5,6,7,8,9],
+        'success': True
+    }
+
+
+```
+
 ---
+
+<a name="other"/>
+
+##### OTHER
 
 <a name="helpers"/>
 
-##### HELPERS
+###### HELPERS
 
-TODO: The helpers are mainly good for args_lists
+* copy_update
+* update_list
+* is_str
+* truthy
+
+<a name="timer"/>
+
+###### TIMER
+
+```
+>>> from dl_jobs.utils import Timer
+>>> t=Timer()
+>>> t.start()
+'May 20 2019 21:47:30'
+>>> t.end()
+>>> t.stop()
+'May 20 2019 21:47:44'
+>>> t.duration()
+'0:00:14'
+```
+
 
 
 
