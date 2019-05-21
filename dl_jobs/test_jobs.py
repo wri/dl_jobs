@@ -39,6 +39,7 @@ def task(nb_jobs,*args,**kwargs):
         platform_job=platform_job,
         cpu_job=cpu_job,
         modules=MODULES,
+        gpus=gpus,
         noisy=noisy,
         log=False )
     return job

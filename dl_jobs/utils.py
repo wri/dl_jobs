@@ -62,29 +62,6 @@ class Timer(object):
 
 
 #
-# HELPERS
-#
-def args_kwargs(ctx_args):
-    args=[]
-    kwargs={}
-    for a in ctx_args:
-        if re.search('=',a):
-            k,v=a.split('=')
-            kwargs[k]=v
-        else:
-            args.append(a)
-    return args,kwargs
-
-
-def flat_list(obj):
-    if not isinstance(obj,list):
-        obj=[obj]
-    elif isinstance(obj[0],list):
-        obj=functools.reduce(operator.iconcat, obj, [])
-    return obj
-
-
-#
 # OUTPUT
 #
 def vspace(n=2):

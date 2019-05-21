@@ -326,6 +326,7 @@ class DLJob(object):
         else:
             image=self.gpu_image
             self._print('gpu-job [{}]'.format(self.gpus))
+        self._print("image: {}".format(image))
         return Tasks().create_function(
             self.method,
             name=self.name,

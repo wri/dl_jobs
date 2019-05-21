@@ -5,7 +5,6 @@ import re
 import click
 import dl_jobs.job as job
 import dl_jobs.config as c
-import dl_jobs.utils as utils
 #
 # DEFAULTS
 #
@@ -91,7 +90,7 @@ def run(ctx,method,dev,noisy,print_logs,cpu_job,cpu_image,gpu_image):
     else:
         module=method
         method=DEFAULT_METHOD
-    args,kwargs=utils.args_kwargs(ctx.args)
+    args,kwargs=_args_kwargs(ctx.args)
     job.run(
         module_name=module,
         method_name=method,
@@ -118,7 +117,7 @@ def run(ctx,method,dev,noisy,print_logs,cpu_job,cpu_image,gpu_image):
     type=bool)
 @click.pass_context
 def generate_config(ctx,force):
-    _,kwargs=utils.args_kwargs(ctx.args)
+    _,kwargs=_args_kwargs(ctx.args)
     c.generate( force=force, **kwargs )
 
 
@@ -160,7 +159,7 @@ def generate_config(ctx,force):
     type=str)
 @click.pass_context
 def test(ctx,nb_jobs,dev,noisy,print_logs,cpu_job,cpu_image,gpu_image):
-    args,kwargs=utils.args_kwargs(ctx.args)
+    args,kwargs=_args_kwargs(ctx.args)
     args=[nb_jobs]+args
     kwargs['options']={
         'dev': dev,
@@ -181,6 +180,22 @@ def test(ctx,nb_jobs,dev,noisy,print_logs,cpu_job,cpu_image,gpu_image):
         dev=dev,
         noisy=noisy,
         print_logs=print_logs )
+
+
+
+#
+# HELPERS
+#
+def _args_kwargs(ctx_args):
+    args=[]
+    kwargs={}
+    for a in ctx_args:
+        if re.search('=',a):
+            k,v=a.split('=')
+            kwargs[k]=v
+        else:
+            args.append(a)
+    return args,kwargs
 
 
 #
