@@ -364,6 +364,7 @@ class DLJob(object):
             self._print(NO_GPUS,header=True)
         else:
             image=self.gpu_image
+            self.gpus=int(self.gpus)
             self._print('gpu-job [{}]'.format(self.gpus))
         self._print("image: {}".format(image))
         return Tasks().create_function(
