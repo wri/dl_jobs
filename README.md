@@ -135,9 +135,9 @@ $ dl_jobs test 2 a b c hello=world --dev True
 * as_json: convert func output to json 
 
 Thanks to the above decorators
-1. The dictionary result gets converted to json so it can be returned used for a DLTask.
+1. The dictionary result gets converted to json so it can returned to a DLTask.
 2. If there is an exception it will get caught and returned in json format (along with the args/kwargs calling the method).
-3. Instead of passing (arg1,arg2,kwarg1='...',kwarg2='...') we can pass it two arguments: a list of args ( [arg1,arg2] ), and a kwarg dictionary ({ 'kwarg1':'...', 'kwarg1':'...' }).  This is useful because when passing an `arg_list` to launch multiple jobs
+3. Instead of passing (arg1,arg2,kwarg1='...',kwarg2='...') we can pass it two arguments: a list of args ( [arg1,arg2] ), and a kwarg dictionary ({ 'kwarg1':'...', 'kwarg1':'...' }).  This is useful when passing an `arg_list` to launch multiple jobs
 
 ```python
 # example:
@@ -165,10 +165,12 @@ def do_work(arg1,arg2,kwarg1='value1',kwarg2='value2'):
 
 ###### HELPERS
 
-* copy_update
 * update_list
+* copy_update
 * is_str
 * truthy
+
+`update_list` is most important as it helps you construct arg_lists for launching multiple DLTasks. The method takes a list of values and dictionary and returns a list where the elements are (deep)copies of the dictionary with values updated by the elements of the list of values.
 
 <a name="timer"/>
 
