@@ -254,29 +254,28 @@ class DLJob(object):
             "logs[{}]".format(len(self.tasks)),
             header=True,
             force=True)
-        utils.line('=')
-        utils.vspace(1)
         if self.tasks:
+            utils.line('=')
+            utils.vspace(1)
             for task in self.tasks:
-                self._print(
-                    task.log,
-                    plain_text=True,
-                    force=True)                
-                utils.vspace(1)
+                task_log=task.log
+                if not task_log.isspace():
+                    self._print(
+                        task_log,
+                        plain_text=True,
+                        force=True)                
+                    utils.vspace(1)
+            utils.line('=')
+            utils.vspace()         
         elif self.platform_job:
+            utils.line('=')
             self._print(
                 'WARNING: no tasks found',
                 plain_text=True,
                 force=True)
-            utils.vspace(1)
-        else:
-            self._print(
-                'INFO: no logs (job run locally)',
-                plain_text=True,
-                force=True)
-            utils.vspace(1)
-        utils.line('=')
-        utils.vspace()
+            utils.line('=')
+            utils.vspace()        
+
 
 
     #
