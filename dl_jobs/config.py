@@ -19,7 +19,9 @@ _DEFAULTS={
     'noisy': c.NOISY,
     'suppress': c.SUPPRESS,
     'save_results': c.SAVE_RESULTS,
+    'save_errors': c.SAVE_ERRORS,
     'results_dir': c.RESULTS_DIR,
+    'errors_dir': c.ERRORS_DIR,
     'log': c.LOG,
     'log_dir': c.LOG_DIR
 }
@@ -50,7 +52,9 @@ def generate(
         noisy=c.NOISY,
         suppress=c.SUPPRESS,
         save_results=c.SAVE_RESULTS,
+        save_errors=c.SAVE_ERRORS,
         results_dir=c.RESULTS_DIR,
+        errors_dir=c.ERRORS_DIR,
         log=c.LOG,
         log_dir=c.LOG_DIR,
         print_logs=c.PRINT_LOGS,
@@ -70,7 +74,9 @@ def generate(
         'noisy': _truthy(noisy),
         'suppress': _to_arr(suppress),
         'save_results': save_results,
-        'results_dir': results_json,
+        'save_errors': save_errors,
+        'results_dir': results_dir,
+        'errors_dir': errors_dir,
         'log': log,
         'log_dir': log_dir }
     if not force and os.path.exists(c.DL_JOBS_CONFIG_PATH):

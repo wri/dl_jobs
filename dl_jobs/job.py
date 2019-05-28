@@ -29,7 +29,9 @@ GPU_IMAGE=c.get('gpu_image')
 IS_DEV=c.get('is_dev')
 NOISY=c.get('noisy')
 SAVE_RESULTS=c.get('save_results')
+SAVE_ERRORS=c.get('save_errors')
 RESULTS_DIR=c.get('results_dir')
+ERRORS_DIR=c.get('errors_dir')
 LOG=c.get('log')
 LOG_DIR=c.get('log_dir')
 PRINT_LOGS=c.get('print_logs')
@@ -117,8 +119,15 @@ class DLJob(object):
             - if false: run locally
         name<str>: name used in naming tasks and log/results files. defaults to method_name.
         noisy<bool>: more logs/print-outs when noisy
-        save_results<bool|str>: save results as ndjson. if str: use str as filename
+        save_results<bool|str>: 
+            save (non-error) results as ndjson. if str: use str as filename
+        save_errors<bool|str>: 
+            save "errors-results" as ndjson. if str: use str as filename
+            "error-results" are:
+                - strings that begin with ERROR
+                - dicts that contain ERROR=True at the top level
         results_dir<str>: directory to save results  
+        errors_dir<str>: directory to save errors  
         results_timestamp<bool>: add timestamp to results filename
         log<bool|str>: write logs. if str: use str as filename
         log_dir<str>: log directory 
@@ -156,7 +165,9 @@ class DLJob(object):
             name=None,
             noisy=True,
             save_results=SAVE_RESULTS,
+            save_errors=SAVE_ERRORS,
             results_dir=RESULTS_DIR,            
+            errors_dir=ERRORS_DIR,
             results_timestamp=True,
             log=LOG,
             log_dir=LOG_DIR,
@@ -170,7 +181,9 @@ class DLJob(object):
             self.method_name)
         self.name=self._name(name,False)  
         self.save_results=save_results
+        self.save_errors=save_errors
         self.results_dir=results_dir
+        self.errors_dir=errors_dir
         self.results_timestamp=results_timestamp
         self.log=log
         self.log_dir=log_dir
@@ -204,6 +217,12 @@ class DLJob(object):
             directory=self.results_dir,
             timestamp=start,
             add_timestamp=self.results_timestamp)
+        self.errors_path=self._get_path(
+            path=self.save_errors,
+            ext='nd_json',
+            directory=self.errors_dir,
+            timestamp=start,
+            add_timestamp=self.results_timestamp)
         self._set_loggers(timestamp=start)
         self._print(self.name,header=True)
         self._print("start: {}".format(start))
@@ -231,6 +250,12 @@ class DLJob(object):
             path=self.save_results,
             ext='nd_json',
             directory=self.results_dir,
+            timestamp=start,
+            add_timestamp=self.results_timestamp)
+        self.errors_path=self._get_path(
+            path=self.save_errors,
+            ext='nd_json',
+            directory=self.errors_dir,
             timestamp=start,
             add_timestamp=self.results_timestamp)
         self._set_loggers(timestamp=start)
@@ -423,15 +448,33 @@ class DLJob(object):
             results=json.loads(results)
             if isinstance(results,list):
                 for result in results:
-                    self._print(self._as_json(result),plain_text=True,result=True)
+                    self._print(
+                        self._as_json(result),
+                        plain_text=True,
+                        result=True,
+                        error=self._is_error(result))
             else:
-                self._print(self._as_json(results),plain_text=True,result=True)
+                self._print(
+                    self._as_json(results),
+                    plain_text=True,
+                    result=True,
+                    error=self._is_error(results))
 
 
-    def _print(self,msg,header=False,plain_text=False,result=False,force=False):
+    def _print(
+            self,
+            msg,
+            header=False,
+            plain_text=False,
+            result=False,
+            error=False,
+            force=False):
         if msg: 
             if result and self.results_path:
-                nd_json.write(msg,self.results_path)
+                if error and self.errors_path:
+                    nd_json.write(msg,self.errors_path)
+                else:
+                    nd_json.write(msg,self.results_path)
             if not utils.suppress(msg):
                 if (not plain_text) and header:
                     if force or self.noisy: utils.vspace()
@@ -451,7 +494,11 @@ class DLJob(object):
             return json.dumps(value)
 
 
-
+    def _is_error(self,value):
+        if isinstance(value,str):
+            return re.search(r'^ERROR',value)
+        else:
+            return value.get('ERROR',False)
 
 
 

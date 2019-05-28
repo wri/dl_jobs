@@ -32,7 +32,9 @@ PRINT_LOGS=True
 DEFAULT_METHOD='task'
 SUPPRESS=['DeprecationWarning']
 SAVE_RESULTS=True
+SAVE_ERRORS=True
 RESULTS_DIR='results'
+ERRORS_DIR='errors'
 LOG=True
 LOG_DIR='logs'
 
