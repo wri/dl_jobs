@@ -10,6 +10,98 @@ This code base is a simple wrapper for the [DLTasks API](https://docs.descartesl
 2. A [DLJob Class](#dljob) that simplifies the boilerplate code for creating/running/monitoring/logging tasks and saving results.
 3. Allows you to easily switch back and forth between running your tasks locally or as a DLJob, making development quicker and easier.
 
+<a name="overview"/>
+
+##### OVERVIEW
+
+Creating a `DLJob` looks a lot like creating a `DLTask`.  Consider the DescartesLabs [GPU example](https://docs.descarteslabs.com/guides/tasks.html#gpu-enabled-task-example)
+
+```python
+client = Tasks()
+async_function = client.create_function(
+    "task_examples.gpu.gpu_tf_ex",
+    image=IMG,
+    name='gpu_tf_ex',
+    gpus=1,
+    include_modules=['task_examples']
+)
+print("submitting a task")
+task = async_function(3)
+print("waiting for the task to complete")
+async_function.wait_for_completion(show_progress=True)
+print(task.result)
+```
+
+will become:
+
+```python
+job=DLJob(
+        module_name='task_examples.gpu',
+        method_name='gpu_tf_ex',
+        args=[3],
+        platform_job=True,
+        cpu_job=False,
+        modules=['task_examples'],
+        requirements=REQUIREMENTS,
+        gpus=1 )
+job.run()
+```
+
+Looks pretty similar, except in the `DLJob` example we are writing logs to a file and writing the results to a `ndjson` file.  
+
+Here are some modifications you can make:
+
+  - replacing `args=[3]` with `args_list=[range(10)]` turns it into a multi-task job
+  - changing `platform_job=True` to `platform_job=False` will run the task on your local machine rather than as a `DLTask`
+  - for more interesting async functions you can pass kwargs (for a single-task job) or a list of kwarg dicts as your args_list (for multi-task jobs)
+
+Its also super easy to build a CLI. Assume you have a module `run.task_examples`:
+
+```python
+# run.task_examples
+from dl_jobs.job import DLJob
+
+def gpu(value):
+  return DLJob(
+      module_name='task_examples.gpu',
+      method_name='gpu_tf_ex',
+      args=[value],
+      platform_job=True,
+      cpu_job=False,
+      modules=['task_examples'],
+      requirements=REQUIREMENTS,
+      gpus=1 )
+```
+
+Then your can run this from your projects root directory like so
+
+```bash
+$ dl_jobs run task_examples.gpu 3
+```
+
+The CLI takes an unspecified number of args and kwargs so its easy to extend this.   
+
+```python
+# run.task_examples-2
+from dl_jobs.job import DLJob
+
+def gpu(value,method_name,**kwargs):
+  platform_job=kwargs.get('platform',False)
+  gpus=int(kwargs.get('gpus',1))
+  return DLJob(
+      module_name='task_examples.gpu',
+      method_name=method_name,
+      args=[value],
+      platform_job=platform_job,
+      cpu_job=False,
+      modules=['task_examples'],
+      requirements=REQUIREMENTS,
+      gpus=gpus )
+```
+```bash
+$ dl_jobs run task_examples.gpu 3 gpu_tf_ex platform_job=true
+```
+
 In addition there are a number of [decorators](#decorators) and [helper methods](#helpers) to make it easy to incorporate `dl_jobs` into your existing code base, along with a light-weight [ndjson](https://github.com/wri/dl_jobs/blob/master/dl_jobs/nd_json.py) reader-writer and a handy [timer](#timer).
 
 Have Fun!
