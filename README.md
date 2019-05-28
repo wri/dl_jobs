@@ -84,9 +84,10 @@ The CLI takes an unspecified number of args and kwargs so its easy to extend thi
 ```python
 # run.task_examples-2
 from dl_jobs.job import DLJob
+import dl_jobs.helpers as h
 
 def gpu(value,method_name,**kwargs):
-  platform_job=kwargs.get('platform',True)
+  platform_job=h.truthy(kwargs.get('platform',True))
   gpus=int(kwargs.get('gpus',1))
   return DLJob(
       module_name='task_examples.gpu',
