@@ -86,7 +86,7 @@ The CLI takes an unspecified number of args and kwargs so its easy to extend thi
 from dl_jobs.job import DLJob
 
 def gpu(value,method_name,**kwargs):
-  platform_job=kwargs.get('platform',False)
+  platform_job=kwargs.get('platform',True)
   gpus=int(kwargs.get('gpus',1))
   return DLJob(
       module_name='task_examples.gpu',
@@ -99,10 +99,16 @@ def gpu(value,method_name,**kwargs):
       gpus=gpus )
 ```
 ```bash
-$ dl_jobs run task_examples.gpu 3 gpu_tf_ex platform_job=true
+$ dl_jobs run task_examples.gpu 3 gpu_tf_ex platform_job=false
 ```
 
-In addition there are a number of [decorators](#decorators) and [helper methods](#helpers) to make it easy to incorporate `dl_jobs` into your existing code base, along with a light-weight [ndjson](https://github.com/wri/dl_jobs/blob/master/dl_jobs/nd_json.py) reader-writer and a handy [timer](#timer).
+As a side note, the CLI has a number of optional params.  For example passing `platform_job=false` is (almost) equivalent to
+
+```bash
+$ dl_jobs run task_examples.gpu 3 gpu_tf_ex --dev true
+```
+
+Finally, there are a number of [decorators](#decorators) and [helper methods](#helpers) to make it easy to incorporate `dl_jobs` into your existing code base, along with a light-weight [ndjson](https://github.com/wri/dl_jobs/blob/master/dl_jobs/nd_json.py) reader-writer and a handy [timer](#timer).
 
 Have Fun!
 
