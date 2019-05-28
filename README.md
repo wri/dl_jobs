@@ -129,7 +129,7 @@ When passing boolean OPTIONS to the CLI values of `false,none,no,null,f,n` and `
 
 ###### RUN
 
-```
+```bash
 Usage: dl_jobs run [OPTIONS] METHOD [ARGS] [KWARGS]
 
   method: module_name or full method <module_name.method_name> 
@@ -157,7 +157,7 @@ Options:
 
 NOTE: for most values its probably easiest to first generate the config (yaml) file and the edit the values.  However when setting the GPU/CPU Images you can pass one of `[py27, py27_gpu, py36, py36_gpu, py37]` instead of including the whole dl-image address.
 
-```
+```bash
 Usage: dl_jobs config [OPTIONS] [KWARGS]
 
   generates config file
@@ -171,7 +171,7 @@ Options:
 
 This command launches a DLTask(s) that simply returns the args,kwargs and options as JSON. It has 1 required argument (nb_jobs) which specifies the number of tasks to launch. As an example try running:
 
-```
+```bash
 $ dl_jobs test 2 a b c hello=world --dev True
 ```
 
@@ -184,7 +184,8 @@ $ dl_jobs test 2 a b c hello=world --dev True
 [dl_jobs.job](https://github.com/wri/dl_jobs/blob/master/dl_jobs/job.py) contains a class `DLJob`, and a `run` method that creates a instances of DLJob and launches them.  The main purpose of `run` is for the CLI.
 
 
-```DLJob: a simple wrapper for the DLTasks-API
+```python
+    DLJob: a simple wrapper for the DLTasks-API
 
     NOTES: only `module_name` is required. The others have 
     defaults (most of which can be set in the config file).
@@ -275,7 +276,7 @@ def do_work(arg1,arg2,kwarg1='value1',kwarg2='value2'):
 
 Here's an example:
 
-```
+```python
 import dl_jobs.helpers as h
 base={ 'action':'hello-world' }
 
@@ -313,7 +314,7 @@ h.update_list(base,args_list)
 
 ###### TIMER
 
-```
+```python
 >>> from dl_jobs.utils import Timer
 >>> t=Timer()
 >>> t.start()
