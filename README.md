@@ -184,7 +184,7 @@ $ dl_jobs test 2 a b c hello=world --dev True
 [dl_jobs.job](https://github.com/wri/dl_jobs/blob/master/dl_jobs/job.py) contains a class `DLJob`, and a `run` method that creates a instances of DLJob and launches them.  The main purpose of `run` is for the CLI.
 
 
-```python
+```
     DLJob: a simple wrapper for the DLTasks-API
 
     NOTES: only `module_name` is required. The others have 
@@ -213,8 +213,15 @@ $ dl_jobs test 2 a b c hello=world --dev True
             - if false: run locally
         name<str>: name used in naming tasks and log/results files. defaults to method_name.
         noisy<bool>: more logs/print-outs when noisy
-        save_results<bool|str>: save results as ndjson. if str: use str as filename
+        save_results<bool|str>: 
+            save (non-error) results as ndjson. if str: use str as filename
+        save_errors<bool|str>: 
+            save "errors-results" as ndjson. if str: use str as filename
+            "error-results" are:
+                - strings that begin with ERROR
+                - dicts that contain ERROR=True at the top level
         results_dir<str>: directory to save results  
+        errors_dir<str>: directory to save errors  
         results_timestamp<bool>: add timestamp to results filename
         log<bool|str>: write logs. if str: use str as filename
         log_dir<str>: log directory 
@@ -224,6 +231,7 @@ $ dl_jobs test 2 a b c hello=world --dev True
     Methods:
         run: launches DLTask(s)
         ...
+
 ```
 
 ---
