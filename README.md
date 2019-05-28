@@ -273,6 +273,42 @@ def do_work(arg1,arg2,kwarg1='value1',kwarg2='value2'):
 
 `update_list` is most important as it helps you construct arg_lists for launching multiple DLTasks. The method takes a list of values and dictionary and returns a list where the elements are (deep)copies of the dictionary with values updated by the elements of the list of values.
 
+Here's an example:
+
+```
+import dl_jobs.helpers as h
+base={ 'action':'hello-world' }
+
+print('key-value example:',"\nh.update_list(base,id_list,'system_id')\n")
+id_list=range(3)
+pprint(h.update_list(base,id_list,'system_id'))
+
+print()
+
+print('dict example:',"\nh.update_list(base,args_list)\n")
+args_list=[{'system_id':1, 'out': 11},{'system_id':2, 'out': 22},{'system_id':3, 'out': 33}]
+pprint(h.update_list(base,args_list))
+
+"""output
+
+key-value example: 
+h.update_list(base,id_list,'system_id')
+
+[{'action': 'hello-world', 'system_id': 0},
+ {'action': 'hello-world', 'system_id': 1},
+ {'action': 'hello-world', 'system_id': 2}]
+
+dict example: 
+h.update_list(base,args_list)
+
+[{'action': 'hello-world', 'out': 11, 'system_id': 1},
+ {'action': 'hello-world', 'out': 22, 'system_id': 2},
+ {'action': 'hello-world', 'out': 33, 'system_id': 3}]
+
+"""
+```
+ 
+
 <a name="timer"/>
 
 ###### TIMER
