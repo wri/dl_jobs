@@ -42,7 +42,6 @@ job=DLJob(
         platform_job=True,
         cpu_job=False,
         modules=['task_examples'],
-        requirements=REQUIREMENTS,
         gpus=1 )
 job.run()
 ```
