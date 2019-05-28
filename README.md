@@ -6,9 +6,9 @@ _CLI and Helper modules for managing [DLTasks](https://docs.descarteslabs.com/gu
 
 This code base is a simple wrapper for the [DLTasks API](https://docs.descarteslabs.com/guides/tasks.html) which includes:
 
-1. A simple [CLI](#cli) that can be used to launch DLTasks
+1. A [CLI](#cli) that can be used to launch DLTasks
 2. A [DLJob Class](#dljob) that simplifies the boilerplate code for creating/running/monitoring/logging tasks and saving results.
-3. Allows you to easily switch back and forth between running your tasks locally or as a DLJob, making development quicker and easier.
+3. Allows you to easily switch back and forth between running your tasks locally or as a DLTask, making development quicker and easier.
 
 <a name="overview"/>
 
