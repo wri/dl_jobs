@@ -167,6 +167,27 @@ Options:
   --force BOOLEAN  if true overwrite existing config
 ```
 
+**DEFAULT CONFIG:**
+
+```
+cpu_image: us.gcr.io/dl-ci-cd/images/tasks/public/py3.6/default:v2019.04.18-13-g565aebde
+gpu_image: us.gcr.io/dl-ci-cd/images/tasks/public/py3.6-gpu/default:v2019.04.18-13-g565aebde
+cpu_job: True
+is_dev: True
+default_method: 'task'
+dls_root: 'dl_jobs'
+module_dir: 'run'
+results_dir: 'results'
+errors_dir: 'errors'
+log_dir: 'logs'
+save_results: True
+save_errors: True
+log: True
+print_logs: True
+noisy: True
+suppress: ['DeprecationWarning']
+```
+
 ###### TEST
 
 This command launches a DLTask(s) that simply returns the args,kwargs and options as JSON. It has 1 required argument (nb_jobs) which specifies the number of tasks to launch. As an example try running:

@@ -98,7 +98,7 @@ class DLJob(object):
 
     Args:
         module_name<str>: module path (ie module_name.submodule_name )
-        method_name<str>: method name 
+        method_name<str>: method name (defaults to 'task')
         cpu_job<bool>:
             - if true: job will always run on cpu-image.
             - if false: job will run on the gpu-image unless gpus=0 
