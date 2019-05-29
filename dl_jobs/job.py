@@ -119,6 +119,7 @@ class DLJob(object):
             - if false: run locally
         name<str>: name used in naming tasks and log/results files. defaults to method_name.
         noisy<bool>: more logs/print-outs when noisy
+        grouped_results<bool|False>: if False and results are <list> write each element as new line 
         save_results<bool|str>: 
             save (non-error) results as ndjson. if str: use str as filename
         save_errors<bool|str>: 
@@ -164,6 +165,7 @@ class DLJob(object):
             platform_job=PLATFORM_JOB,
             name=None,
             noisy=True,
+            grouped_results=False,
             save_results=SAVE_RESULTS,
             save_errors=SAVE_ERRORS,
             results_dir=RESULTS_DIR,            
@@ -179,7 +181,8 @@ class DLJob(object):
         self.method=DLJob.full_method_name(
             self.module_name,
             self.method_name)
-        self.name=self._name(name,False)  
+        self.name=self._name(name,False)
+        self.grouped_results=grouped_results
         self.save_results=save_results
         self.save_errors=save_errors
         self.results_dir=results_dir
@@ -446,7 +449,7 @@ class DLJob(object):
     def _print_result(self,results):
         if results:
             results=json.loads(results)
-            if isinstance(results,list):
+            if (not self.grouped_results) and isinstance(results,list):
                 for result in results:
                     self._print(
                         self._as_json(result),
