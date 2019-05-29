@@ -167,7 +167,7 @@ Options:
   --force BOOLEAN  if true overwrite existing config
 ```
 
-**DEFAULT CONFIG:**
+DEFAULT CONFIG:
 
 ```
 cpu_image: us.gcr.io/dl-ci-cd/images/tasks/public/py3.6/default:v2019.04.18-13-g565aebde
