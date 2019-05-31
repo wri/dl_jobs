@@ -158,33 +158,40 @@ Options:
 NOTE: for most values its probably easiest to first generate the config (yaml) file and the edit the values.  However when setting the GPU/CPU Images you can pass one of `[py27, py27_gpu, py36, py36_gpu, py37]` instead of including the whole dl-image address.
 
 ```bash
-Usage: dl_jobs config [OPTIONS] [KWARGS]
+Usage: dl_jobs config [OPTIONS]
 
-  generates config file
-  pass kwargs to preset defaults in config file (ie `noisy=False`)
+  generate config file: pass kwargs (ie $dl_jobs config dl_image=py36
+  dev=true)
 
 Options:
-  --force BOOLEAN  if true overwrite existing config
+  -i, --info           print current or default config
+  -f, --force BOOLEAN  if true overwrite existing config
+  --help               Show this message and exit.
 ```
 
-```yaml
+```bash
 # DEFAULT CONFIG:
-cpu_image: us.gcr.io/dl-ci-cd/images/tasks/public/py3.6/default:v2019.04.18-13-g565aebde
-gpu_image: us.gcr.io/dl-ci-cd/images/tasks/public/py3.6-gpu/default:v2019.04.18-13-g565aebde
-cpu_job: True
-is_dev: True
-default_method: task
-dls_root: dl_jobs
-module_dir: run
-results_dir: results
-errors_dir: errors
-log_dir: logs
-save_results: True
-save_errors: True
-log: True
-print_logs: True
-noisy: True
-suppress: ['DeprecationWarning']
+$ dl_jobs config --info
+
+dl_jobs.config:
+    cpus: 1
+    gpus: 0
+    cpu_job: True
+    cpu_image: us.gcr.io/dl-ci-cd/images/tasks/public/py3.6/default:v2019.04.18-13-g565aebde
+    gpu_image: us.gcr.io/dl-ci-cd/images/tasks/public/py3.6-gpu/default:v2019.04.18-13-g565aebde
+    dls_root: dl_jobs
+    is_dev: True
+    module_dir: run
+    print_logs: True
+    default_method: task
+    noisy: True
+    suppress: ['DeprecationWarning']
+    save_results: True
+    save_errors: True
+    results_dir: results
+    errors_dir: errors
+    log: True
+    log_dir: logs
 ```
 
 ###### TEST
@@ -226,6 +233,7 @@ $ dl_jobs test 2 a b c hello=world --dev True
             list of requirements, or path to requirements.txt, to include 
             when creating async_func
         data<list|None>: list of modules to include when creating async_func
+        cpus<int|1>: Number of CPUs
         gpus<int|None>: Number of GPUs
         platform_job<bool>:
             - if true: run as DLTask.  Note the CLI can override this by passing

@@ -118,6 +118,7 @@ class DLJob(object):
             list of requirements, or path to requirements.txt, to include 
             when creating async_func
         data<list|None>: list of modules to include when creating async_func
+        cpus<int|1>: Number of CPUs
         gpus<int|None>: Number of GPUs
         platform_job<bool>:
             - if true: run as DLTask.  Note the CLI can override this by passing
