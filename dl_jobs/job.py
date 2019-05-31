@@ -1,5 +1,6 @@
 from __future__ import print_function
 import os,sys
+import re
 import json
 import warnings
 from importlib import import_module
@@ -363,6 +364,11 @@ class DLJob(object):
                     path='{}/{}'.format(directory,path)
                 if ext:
                     path='{}.{}'.format(path,timestamp,ext)
+            elif add_timestamp:
+                    if not timestamp:
+                        timestamp=self.timer.now()
+                        timestamp=re.sub(' ','.',timestamp)
+                    path='{}_{}'.format(path,timestamp)
             return path
 
 
@@ -394,7 +400,7 @@ class DLJob(object):
                 self._print(CPU_JOB_WITH_GPUS)
                 self.gpus=0
             else:
-                self._print('cpu-job []'.format(self.cpus))
+                self._print('cpu-job [{}]'.format(self.cpus))
         elif (not self.gpus):
             image=self.cpu_image
             self._print(NO_GPUS,header=True)
