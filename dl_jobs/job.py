@@ -23,6 +23,8 @@ NO_JOB_TMPL='[WARNING] DLJob.run: no job found for {}.{}'
 NO_GPUS='[WARNING] (GPUs=0 and cpu_job=False) launching as CPU job'
 CPU_JOB_WITH_GPUS='[WARNING] cpu_job with GPUs>0, setting GPUs=0'
 TRACE_TMPL='- {}'
+CPUS=c.get('cpus')
+GPUS=c.get('gpus')
 CPU_JOB=c.get('cpu_job')
 CPU_IMAGE=c.get('cpu_image')
 GPU_IMAGE=c.get('gpu_image')
@@ -46,6 +48,8 @@ MODULE_DIR=c.get('module_dir')
 def run(
         module_name,
         method_name=DEFAULT_METHOD,
+        cpus=CPUS,
+        gpus=GPUS,
         cpu_job=CPU_JOB,
         cpu_image=CPU_IMAGE,
         gpu_image=GPU_IMAGE,
@@ -61,6 +65,8 @@ def run(
     job_method=DLJob.get_method(module_name,method_name)
     if not kwargs:
         kwargs={}
+    kwargs['cpus']=cpus
+    kwargs['gpus']=gpus
     kwargs['cpu_job']=cpu_job
     kwargs['cpu_image']=cpu_image
     kwargs['gpu_image']=gpu_image
@@ -161,7 +167,8 @@ class DLJob(object):
             modules=None,
             requirements=None,
             data=None,
-            gpus=None,
+            cpus=CPUS,
+            gpus=GPUS,
             platform_job=PLATFORM_JOB,
             name=None,
             noisy=True,
@@ -191,6 +198,8 @@ class DLJob(object):
         self.log=log
         self.log_dir=log_dir
         self.noisy=noisy
+        self.cpus=int(cpus)
+        self.gpus=gpus
         self.cpu_job=cpu_job
         self.cpu_image=cpu_image
         self.gpu_image=gpu_image
@@ -199,7 +208,6 @@ class DLJob(object):
         self.modules=modules
         self.requirements=self._requirements(requirements)
         self.data=data
-        self.gpus=gpus
         self.platform_job=platform_job
         self.tasks=[]
 
@@ -385,14 +393,14 @@ class DLJob(object):
                 self._print(CPU_JOB_WITH_GPUS)
                 self.gpus=0
             else:
-                self._print('cpu-job')
+                self._print('cpu-job []'.format(self.cpus))
         elif (not self.gpus):
             image=self.cpu_image
             self._print(NO_GPUS,header=True)
         else:
             image=self.gpu_image
             self.gpus=int(self.gpus)
-            self._print('gpu-job [{}]'.format(self.gpus))
+            self._print('gpu-job [{} ({})]'.format(self.gpus,self.cpus))
         self._print("image: {}".format(image))
         return Tasks().create_function(
             self.method,
@@ -401,7 +409,8 @@ class DLJob(object):
             include_data=self.data,
             include_modules=self.modules,
             requirements=self.requirements,
-            gpus=self.gpus )
+            gpus=self.gpus,
+            cpus=self.cpus )
 
 
     def _run_platform_task(self,async_func):
@@ -500,6 +509,9 @@ class DLJob(object):
     def _is_error(self,value):
         if isinstance(value,str):
             return re.search(r'^ERROR',value)
+        elif isinstance(value,list):
+            """ TODO: handle list errors """
+            return False
         else:
             return value.get('ERROR',False)
 

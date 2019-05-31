@@ -111,14 +111,26 @@ def run(ctx,method,dev,noisy,print_logs,cpu_job,cpu_image,gpu_image):
     help='generate config file: pass kwargs (ie $dl_jobs config dl_image=py36 dev=true)',
     context_settings=ARG_KWARGS_SETTINGS ) 
 @click.option(
+    '--info',
+    '-i',
+    is_flag=True,
+    help='print current or default config',
+    type=bool)
+@click.option(
     '--force',
+    '-f',
     default=False,
     help='if true overwrite existing config',
     type=bool)
 @click.pass_context
-def generate_config(ctx,force):
-    _,kwargs=_args_kwargs(ctx.args)
-    c.generate( force=force, **kwargs )
+def generate_config(ctx,info,force):
+    if info:
+        print("dl_jobs.config:")
+        for key in c.CONFIG:
+            print("\t{}: {}".format(key,c.CONFIG[key]))
+    else:
+        _,kwargs=_args_kwargs(ctx.args)
+        c.generate( force=force, **kwargs )
 
 
 

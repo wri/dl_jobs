@@ -3,11 +3,16 @@ import os.path
 import warnings
 import yaml
 import dl_jobs.constants as c
+from copy import deepcopy
+
+
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 #
 # DEFALUTS 
 #
 _DEFAULTS={
+    'cpus': c.CPUS,
+    'gpus': c.GPUS,
     'cpu_job': c.CPU_JOB,
     'cpu_image': c.CPU_IMAGE,
     'gpu_image': c.GPU_IMAGE,
@@ -30,19 +35,20 @@ _DEFAULTS={
 #
 # LOAD CONFIG
 #
+CONFIG=deepcopy(_DEFAULTS)
 if os.path.exists(c.DL_JOBS_CONFIG_PATH):
-    _CONFIG=yaml.safe_load(open(c.DL_JOBS_CONFIG_PATH))
-else:
-    _CONFIG={}
+    CONFIG.update(yaml.safe_load(open(c.DL_JOBS_CONFIG_PATH)))
 
 
 def get(key):
     """ get value
     """
-    return _CONFIG.get(key,_DEFAULTS[key])
+    return CONFIG[key]
 
 
 def generate(
+        cpus=c.CPUS,
+        gpus=c.GPUS,
         cpu_job=c.CPU_JOB,
         cpu_image=c.CPU_IMAGE,
         gpu_image=c.GPU_IMAGE,
@@ -63,6 +69,8 @@ def generate(
     """ generate config file
     """
     config={
+        'cpus': cpus,
+        'gpus': gpus,
         'cpu_job': cpu_job,
         'cpu_image': _get_image(cpu_image),
         'gpu_image': _get_image(gpu_image),
@@ -92,19 +100,21 @@ def generate(
 # INTERNAL
 #
 _FALSEY=['false','none','no','null','f','n','0']
+def _truthy(value):
+    """ duplicate of dl_jobs.helpers.truthy
+    """
+    if isinstance(value,bool) or isinstance(value,int) or (value is None):
+        return value
+    elif is_str(value):
+        value=value.lower()
+        return value not in FALSEY
+    else:
+        raise ValueError('truthy: value must be str,int,bool')
 
 
 def _get_image(image):
     """ dl_image from dl_image or image-key (py27,py27_gpu,py36,...) """
     return c.IMAGES.get(image,image)
-
-
-def _truthy(value):
-    if isinstance(value,str):
-        value=value.lower()
-        return value not in _FALSEY
-    else:
-        raise value
 
 
 def _to_arr(value):

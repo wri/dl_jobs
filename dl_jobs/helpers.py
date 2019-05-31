@@ -83,3 +83,5 @@ def truthy(value):
         return value not in FALSEY
     else:
         raise ValueError('truthy: value must be str,int,bool')
+
+
