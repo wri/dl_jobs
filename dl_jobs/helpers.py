@@ -3,6 +3,7 @@ from copy import deepcopy
 # CONSTANTS
 #
 FALSEY=['false','none','no','null','f','n','0']
+TRUE_STRS=['true','t','yes','y','1']
 
 
 
@@ -68,6 +69,20 @@ def is_str(value):
         except:
             is_a_str=False
         return is_a_str
+
+
+def bool_str(value):
+    """ return bool for true/falsey_strs otherwise value """
+    if isinstance(value,str):
+        low_value=value.lower()
+        if low_value in FALSEY:
+            return False
+        elif low_value in TRUE_STRS:
+            return True
+        else:
+            return value
+    else:
+        return value
 
 
 def truthy(value):

@@ -9,6 +9,7 @@ from descarteslabs.client.services.tasks import Tasks, as_completed
 import dl_jobs.config as c
 import dl_jobs.utils as utils
 import dl_jobs.nd_json as nd_json
+import dl_jobs.helpers as h
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 sys.path.append(os.getcwd())
 """
@@ -332,7 +333,7 @@ class DLJob(object):
 
 
     def _requirements(self,requirements):
-        if isinstance(requirements,str) and os.path.isdir(requirements):
+        if h.is_str(requirements) and os.path.isdir(requirements):
             requirements="{requirements}/requirements.txt"
         return requirements
 
@@ -351,24 +352,20 @@ class DLJob(object):
 
     def _get_path(self,path,ext=None,directory=None,timestamp=None,add_timestamp=True):
         if path:
-            if not isinstance(path,str):
+            path=h.bool_str(path)
+            if not h.is_str(path):
                 path=self.name
-                if add_timestamp:
-                    if not timestamp:
-                        timestamp=self.timer.now()
-                        timestamp=re.sub(' ','.',timestamp)
-                    path='{}_{}'.format(path,timestamp)
-                if directory:
-                    if not os.path.exists(directory):
-                        os.makedirs(directory)
-                    path='{}/{}'.format(directory,path)
-                if ext:
-                    path='{}.{}'.format(path,timestamp,ext)
-            elif add_timestamp:
-                    if not timestamp:
-                        timestamp=self.timer.now()
-                        timestamp=re.sub(' ','.',timestamp)
-                    path='{}_{}'.format(path,timestamp)
+            if add_timestamp:
+                if not timestamp:
+                    timestamp=self.timer.now()
+                    timestamp=re.sub(' ','.',timestamp)
+                path='{}_{}'.format(path,timestamp)
+            if directory:
+                if not os.path.exists(directory):
+                    os.makedirs(directory)
+                path='{}/{}'.format(directory,path)
+            if ext:
+                path='{}.{}'.format(path,timestamp,ext)
             return path
 
 
@@ -380,6 +377,7 @@ class DLJob(object):
             self.logger.addHandler(self.log_handler)
             self.logger.setLevel(logging.DEBUG)
             self.logger.info(self.log_file)
+            self._print("log: {}".format(self.log))
         else:
             self.log_file=None
             self.log_handler=False
@@ -507,14 +505,14 @@ class DLJob(object):
 
 
     def _as_json(self,value):
-        if isinstance(value,str):
+        if h.is_str(value):
             return value
         else:
             return json.dumps(value)
 
 
     def _is_error(self,value):
-        if isinstance(value,str):
+        if h.is_str(value):
             return re.search(r'^ERROR',value)
         elif isinstance(value,list):
             """ TODO: handle list errors """
