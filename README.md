@@ -253,6 +253,7 @@ $ dl_jobs test 2 a b c hello=world --dev True
         results_timestamp<bool>: add timestamp to results filename
         log<bool|str>: write logs. if str: use str as filename
         log_dir<str>: log directory 
+        task_kwargs<dict>: dict of other DLTask.create_function args not explicitly defined above
         *args: args for method when launching a single job (otherwise use args_list)
         **kwargs: kwargs for method when launching a single job (otherwise use args_list)
 

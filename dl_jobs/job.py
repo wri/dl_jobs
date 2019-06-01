@@ -140,7 +140,8 @@ class DLJob(object):
         errors_dir<str>: directory to save errors  
         results_timestamp<bool>: add timestamp to results filename
         log<bool|str>: write logs. if str: use str as filename
-        log_dir<str>: log directory 
+        log_dir<str>: log directory
+        task_kwargs<dict>: dict of other DLTask.create_function args not explicitly defined above
         *args: args for method when launching a single job (otherwise use args_list)
         **kwargs: kwargs for method when launching a single job (otherwise use args_list)
 
@@ -183,6 +184,7 @@ class DLJob(object):
             results_timestamp=True,
             log=LOG,
             log_dir=LOG_DIR,
+            task_kwargs={},
             *args,
             **kwargs):
         self.timer=utils.Timer()
@@ -212,6 +214,7 @@ class DLJob(object):
         self.requirements=self._requirements(requirements)
         self.data=data
         self.platform_job=platform_job
+        self.task_kwargs=task_kwargs
         self.tasks=[]
 
 
@@ -227,24 +230,26 @@ class DLJob(object):
         start=self.timer.start()
         self.results_path=self._get_path(
             path=self.save_results,
-            ext='nd_json',
+            ext='ndjson',
             directory=self.results_dir,
             timestamp=start,
             add_timestamp=self.results_timestamp)
         self.errors_path=self._get_path(
             path=self.save_errors,
-            ext='nd_json',
+            ext='ndjson',
             directory=self.errors_dir,
             timestamp=start,
             add_timestamp=self.results_timestamp)
         self._set_loggers(timestamp=start)
         self._print(self.name,header=True)
         self._print("start: {}".format(start))
-        self._print("local_run",True)
+        self._print("log: {}".format(self.log_file))
+        if self.task_kwargs:
+            self._print("task_kwargs: {}".format(self.task_kwargs))
         func=DLJob.get_method(self.module_name,self.method_name)
         self._response_divider(True)
         if self.args_list:
-            out=map(func,self.args_list)
+            out=map(self.results_dir,func,self.args_list)
             for o in list(out):
                 self._print_result(o)
         else:
@@ -275,7 +280,9 @@ class DLJob(object):
         self._set_loggers(timestamp=start)
         self._print(self.name,header=True)
         self._print("start: {}".format(start))
-        self._print("platform_run",header=True)
+        self._print("log: {}".format(self.log_file))
+        if self.task_kwargs:
+            self._print("task_kwargs: {}".format(self.task_kwargs))
         async_func=self._create_async_func()
         if self.args_list:
             out=self._run_platform_tasks(async_func)
@@ -358,14 +365,14 @@ class DLJob(object):
             if add_timestamp:
                 if not timestamp:
                     timestamp=self.timer.now()
-                    timestamp=re.sub(' ','.',timestamp)
                 path='{}_{}'.format(path,timestamp)
             if directory:
                 if not os.path.exists(directory):
                     os.makedirs(directory)
                 path='{}/{}'.format(directory,path)
             if ext:
-                path='{}.{}'.format(path,timestamp,ext)
+                path='{}.{}'.format(path,ext)
+            path=re.sub(' ','.',path)
             return path
 
 
@@ -377,7 +384,6 @@ class DLJob(object):
             self.logger.addHandler(self.log_handler)
             self.logger.setLevel(logging.DEBUG)
             self.logger.info(self.log_file)
-            self._print("log: {}".format(self.log))
         else:
             self.log_file=None
             self.log_handler=False
@@ -415,7 +421,8 @@ class DLJob(object):
             include_modules=self.modules,
             requirements=self.requirements,
             gpus=self.gpus,
-            cpus=self.cpus )
+            cpus=self.cpus,
+            **self.task_kwargs )
 
 
     def _run_platform_task(self,async_func):
