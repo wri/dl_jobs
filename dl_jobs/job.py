@@ -249,7 +249,7 @@ class DLJob(object):
         func=DLJob.get_method(self.module_name,self.method_name)
         self._response_divider(True)
         if self.args_list:
-            out=map(self.results_dir,func,self.args_list)
+            out=map(func,self.args_list)
             for o in list(out):
                 self._print_result(o)
         else:
@@ -267,13 +267,13 @@ class DLJob(object):
         start=self.timer.start()
         self.results_path=self._get_path(
             path=self.save_results,
-            ext='nd_json',
+            ext='ndjson',
             directory=self.results_dir,
             timestamp=start,
             add_timestamp=self.results_timestamp)
         self.errors_path=self._get_path(
             path=self.save_errors,
-            ext='nd_json',
+            ext='ndjson',
             directory=self.errors_dir,
             timestamp=start,
             add_timestamp=self.results_timestamp)
@@ -281,6 +281,8 @@ class DLJob(object):
         self._print(self.name,header=True)
         self._print("start: {}".format(start))
         self._print("log: {}".format(self.log_file))
+        self._print("results: {}".format(self.results_path))
+        self._print("errors: {}".format(self.errors_path))
         if self.task_kwargs:
             self._print("task_kwargs: {}".format(self.task_kwargs))
         async_func=self._create_async_func()
