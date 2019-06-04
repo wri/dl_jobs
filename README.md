@@ -10,6 +10,13 @@ This code base is a simple wrapper for the [DLTasks API](https://docs.descartesl
 2. A [DLJob Class](#dljob) that simplifies the boilerplate code for creating/running/monitoring/logging tasks and saving results.
 3. Allows you to easily switch back and forth between running your tasks locally or as a DLTask, making development quicker and easier.
 
+```bash
+# INSTALL
+git clone https://github.com/wri/dl_jobs.git
+cd dl_jobs
+pip install -e .
+```
+
 <a name="overview"/>
 
 ##### OVERVIEW
