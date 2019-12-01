@@ -415,10 +415,10 @@ class DLJob(object):
             self.gpus=int(self.gpus)
             self._print('gpu-job [{} ({})]'.format(self.gpus,self.cpus))
         self._print("image: {}".format(image))
-        return Tasks().create_function(
+        return Tasks().create_or_get_function(
             self.method,
-            name=self.name,
             image=image,
+            name=self.name,
             include_data=self.data,
             include_modules=self.modules,
             requirements=self.requirements,
