@@ -19,7 +19,7 @@ sys.path.append(os.getcwd())
 """
 PLATFORM_JOB=False
 DEFAULT_METHOD='task'
-NAME_TMPL='dljob_{}'
+NAME_TMPL='dljob_{}-{}'
 HEADER_TMPL='DLJob.{}: '
 NO_JOB_TMPL='[WARNING] DLJob.run: no job found for {}.{}'
 NO_GPUS='[WARNING] (GPUs=0 and cpu_job=False) launching as CPU job'
@@ -187,13 +187,15 @@ class DLJob(object):
             task_kwargs={},
             *args,
             **kwargs):
+        self.platform_job=platform_job
         self.timer=utils.Timer()
         self.module_name=module_name
         self.method_name=method_name
         self.method=DLJob.full_method_name(
             self.module_name,
             self.method_name)
-        self.name=self._name(name,False)
+        self.start_timestamp=self.timer.start()
+        self.name=self._name(name)
         self.grouped_results=grouped_results
         self.save_results=save_results
         self.save_errors=save_errors
@@ -213,7 +215,6 @@ class DLJob(object):
         self.modules=modules
         self.requirements=self._requirements(requirements)
         self.data=data
-        self.platform_job=platform_job
         self.task_kwargs=task_kwargs
         self.tasks=[]
 
@@ -226,23 +227,21 @@ class DLJob(object):
 
 
     def local_run(self):
-        self.name=self._name(self.name)
-        start=self.timer.start()
         self.results_path=self._get_path(
             path=self.save_results,
             ext='ndjson',
             directory=self.results_dir,
-            timestamp=start,
+            timestamp=self.start_timestamp,
             add_timestamp=self.results_timestamp)
         self.errors_path=self._get_path(
             path=self.save_errors,
             ext='ndjson',
             directory=self.errors_dir,
-            timestamp=start,
+            timestamp=self.start_timestamp,
             add_timestamp=self.results_timestamp)
-        self._set_loggers(timestamp=start)
+        self._set_loggers(timestamp=self.start_timestamp)
         self._print(self.name,header=True)
-        self._print("start: {}".format(start))
+        self._print("start: {}".format(self.start_timestamp))
         self._print("log: {}".format(self.log_file))
         if self.task_kwargs:
             self._print("task_kwargs: {}".format(self.task_kwargs))
@@ -263,23 +262,21 @@ class DLJob(object):
 
 
     def platform_run(self):
-        self.name=self._name(self.name)
-        start=self.timer.start()
         self.results_path=self._get_path(
             path=self.save_results,
             ext='ndjson',
             directory=self.results_dir,
-            timestamp=start,
+            timestamp=self.start_timestamp,
             add_timestamp=self.results_timestamp)
         self.errors_path=self._get_path(
             path=self.save_errors,
             ext='ndjson',
             directory=self.errors_dir,
-            timestamp=start,
+            timestamp=self.start_timestamp,
             add_timestamp=self.results_timestamp)
-        self._set_loggers(timestamp=start)
+        self._set_loggers(timestamp=self.start_timestamp)
         self._print(self.name,header=True)
-        self._print("start: {}".format(start))
+        self._print("start: {}".format(self.start_timestamp))
         self._print("log: {}".format(self.log_file))
         self._print("results: {}".format(self.results_path))
         self._print("errors: {}".format(self.errors_path))
@@ -349,13 +346,14 @@ class DLJob(object):
 
     def _name(self,name,job_type=True):
         if not name:
-            name=NAME_TMPL.format(self.method)
-        if job_type:
-            if self.platform_job:
-                typ='platform'
-            else:
-                typ='local'
-            name='{}-{}'.format(name,typ)
+            tstamp=re.sub(r" ",r"_",self.start_timestamp)
+            name=NAME_TMPL.format(self.method,tstamp)
+            if job_type:
+                if self.platform_job:
+                    typ='platform'
+                else:
+                    typ='local'
+                name='{}-{}'.format(name,typ)
         return name
 
 
